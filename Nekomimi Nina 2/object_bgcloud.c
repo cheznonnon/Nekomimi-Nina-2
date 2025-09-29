@@ -38,7 +38,7 @@ n_nn2_bgcloud_init_single( n_nn2 *p, n_sprite *spr, n_nn2_stage *stg )
 		int     ox[ N_SPRITE_MAX ];
 		int     oy[ N_SPRITE_MAX ];
 
-		int interval = 2;
+		int interval = 1;
 
 		if ( i == 0 )
 		{
@@ -66,6 +66,42 @@ n_nn2_bgcloud_init_single( n_nn2 *p, n_sprite *spr, n_nn2_stage *stg )
 			bmp[ n ] = &stg->bgcloud_bmp[ 3 ]; ox[ n ] = 0; oy[ n ] = 0; n++;
 			bmp[ n ] = NULL;
 		} else
+		if ( i == 4 )
+		{
+			int n = 0;
+			bmp[ n ] = &stg->bgcloud_bmp[ 4 ]; ox[ n ] = 0; oy[ n ] = 0; n++;
+			bmp[ n ] = NULL;
+		} else
+		if ( i == 5 )
+		{
+			int n = 0;
+			bmp[ n ] = &stg->bgcloud_bmp[ 5 ]; ox[ n ] = 0; oy[ n ] = 0; n++;
+			bmp[ n ] = NULL;
+		} else
+		if ( i == 6 )
+		{
+			int n = 0;
+			bmp[ n ] = &stg->bgcloud_bmp[ 4 ]; ox[ n ] = 0; oy[ n ] = 0; n++;
+			bmp[ n ] = NULL;
+		} else
+		if ( i == 7 )
+		{
+			int n = 0;
+			bmp[ n ] = &stg->bgcloud_bmp[ 3 ]; ox[ n ] = 0; oy[ n ] = 0; n++;
+			bmp[ n ] = NULL;
+		} else
+		if ( i == 8 )
+		{
+			int n = 0;
+			bmp[ n ] = &stg->bgcloud_bmp[ 2 ]; ox[ n ] = 0; oy[ n ] = 0; n++;
+			bmp[ n ] = NULL;
+		} else
+		if ( i == 9 )
+		{
+			int n = 0;
+			bmp[ n ] = &stg->bgcloud_bmp[ 1 ]; ox[ n ] = 0; oy[ n ] = 0; n++;
+			bmp[ n ] = NULL;
+		} else
 		//
 		{
 			break;
@@ -91,10 +127,18 @@ void
 n_nn2_bgcloud_init( n_nn2 *p, n_nn2_stage *stg )
 {
 
-	n_nn2_bgcloud_load_single( p, &stg->bgcloud_bmp[ 0 ], 1.000 );
-	n_nn2_bgcloud_load_single( p, &stg->bgcloud_bmp[ 1 ], 0.975 );
-	n_nn2_bgcloud_load_single( p, &stg->bgcloud_bmp[ 2 ], 0.955 );
-	n_nn2_bgcloud_load_single( p, &stg->bgcloud_bmp[ 3 ], 0.975 );
+	{
+		n_type_real x = 0.0;
+
+		int i = 0;
+		n_posix_loop
+		{
+			n_nn2_bgcloud_load_single( p, &stg->bgcloud_bmp[ i ], cos( M_PI * 2.0 * x ) );
+
+			i++; x += 0.01;
+			if ( i >= N_NN2_BGCLOUD_BMP_MAX ) { break; }
+		}
+	}
 
 
 	int i = 0;

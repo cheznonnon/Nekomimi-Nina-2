@@ -16,7 +16,71 @@ extern BOOL n_object_bell_condition_detect( n_nn2 *p, n_type_gfx x, n_type_gfx y
 extern int  n_object_treasure_collision_wall_lr_loop( n_nn2 *p, n_type_gfx lx, n_type_gfx rx, n_type_gfx yy );
 extern BOOL n_object_treasure_heart_detect( n_nn2 *p, n_type_gfx tx, n_type_gfx ty );
 
+extern void n_object_handheld_off( n_nn2 *p );
+
 extern void n_splash_init( n_nn2 *p, n_splash *s, n_type_gfx x, n_type_gfx y, u32 timeout );
+
+
+
+
+int
+n_chara_collision_hole_detect( n_nn2 *p, n_type_gfx ty_u, n_type_gfx ty_d )
+{
+
+	int ret = 0;
+
+	n_type_gfx max_y = N_BMP_SY( &p->stage->map );
+
+	p->lr_lock = FALSE;
+
+	if ( ty_u >= max_y ) { p->lr_lock = TRUE; ret |= N_CHARA_COLLISION_LR_HEAD; }
+	//if ( ty_d >= max_y ) { p->lr_lock = TRUE; ret |= N_CHARA_COLLISION_LR_FOOT; }
+
+	if ( p->lr_lock ) { p->suck_stop = TRUE; }
+
+
+	return ret;
+}
+
+void
+n_chara_collision_hole( n_nn2 *p )
+{
+
+	if ( p->transition_lock )
+	{
+
+		//
+
+	} else
+	if ( p->stage->nina_y > p->stage->map_sy )
+	{
+		p->transition_lock = TRUE;
+
+		if ( p->stage == &n_nn2_stage_0 )
+		{
+			p->bell_reset_onoff = TRUE;
+		}
+
+		if ( n_object_birds_is_caught( p ) )
+		{
+			n_object_handheld_off( p );
+		}
+
+		n_type_gfx x = p->stage->nina_x + ( p->nina_sx / 2 ); x /= p->mapchip_unit;
+		n_type_gfx y = N_BMP_SY( &p->stage->map_dokan ) - 1;
+
+		u32 data = 0; n_bmp_ptr_get( &p->stage->map_dokan, x, y, &data );
+
+		int stage_number = n_nn2_map_dokan_data_kind( data );
+//NSLog( @"Warp to %d", stage_number );
+
+		extern void n_nn2_stage_transition_go( n_nn2 *p, int stage_number );
+		n_nn2_stage_transition_go( p, stage_number );
+	}
+
+
+	return;
+}
 
 
 
@@ -161,6 +225,8 @@ n_chara_collision_jam_resolver( n_nn2 *p, int direction )
 	if ( p->hipdrop_state ) { return; }
 
 	if ( p->dokan_onoff ) { return; }
+
+	if ( p->brick_move_onoff ) { return; }
 
 /*
 	if ( n_mac_keystate_get( N_MAC_KEYCODE_H ) )
@@ -411,16 +477,9 @@ n_chara_collision_wall_lr_loop( n_nn2 *p )
 //return ret;
 
 
-	// [!] : this makes stop/lock when out of bounds
-	{
-		n_type_gfx max_y = N_BMP_SY( &p->stage->map );
-
-		p->lr_lock = FALSE;
-
-		if ( ty_u >= max_y ) { p->lr_lock = TRUE; ret |= N_CHARA_COLLISION_LR_HEAD; }
-		//if ( ty_d >= max_y ) { p->lr_lock = TRUE; ret |= N_CHARA_COLLISION_LR_FOOT; }
-//return ret;
-	}
+	ret |= n_chara_collision_hole_detect( p, ty_u, ty_d );
+//p->debug_box_x = tx_r;
+//p->debug_box_y = ty_u;
 
 
 	if ( n_chip_detect( p, tx_l, ty_u ) )

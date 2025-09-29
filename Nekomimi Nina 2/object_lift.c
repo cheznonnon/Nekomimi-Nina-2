@@ -73,7 +73,7 @@ n_object_lift_init( n_nn2 *p, n_sprite *s )
 		int     ox[ N_SPRITE_MAX ];
 		int     oy[ N_SPRITE_MAX ];
 
-		int interval = 2;
+		int interval = 1;
 
 		if ( i == 0 )
 		{
@@ -99,6 +99,42 @@ n_object_lift_init( n_nn2 *p, n_sprite *s )
 		{
 			int n = 0;
 			bmp[ n ] = &p->lift_bmp[ 3 ]; ox[ n ] = 0; oy[ n ] = 0; n++;
+			bmp[ n ] = NULL;
+		} else
+		if ( i == 4 )
+		{
+			int n = 0;
+			bmp[ n ] = &p->lift_bmp[ 4 ]; ox[ n ] = 0; oy[ n ] = 0; n++;
+			bmp[ n ] = NULL;
+		} else
+		if ( i == 5 )
+		{
+			int n = 0;
+			bmp[ n ] = &p->lift_bmp[ 5 ]; ox[ n ] = 0; oy[ n ] = 0; n++;
+			bmp[ n ] = NULL;
+		} else
+		if ( i == 6 )
+		{
+			int n = 0;
+			bmp[ n ] = &p->lift_bmp[ 4 ]; ox[ n ] = 0; oy[ n ] = 0; n++;
+			bmp[ n ] = NULL;
+		} else
+		if ( i == 7 )
+		{
+			int n = 0;
+			bmp[ n ] = &p->lift_bmp[ 3 ]; ox[ n ] = 0; oy[ n ] = 0; n++;
+			bmp[ n ] = NULL;
+		} else
+		if ( i == 8 )
+		{
+			int n = 0;
+			bmp[ n ] = &p->lift_bmp[ 2 ]; ox[ n ] = 0; oy[ n ] = 0; n++;
+			bmp[ n ] = NULL;
+		} else
+		if ( i == 9 )
+		{
+			int n = 0;
+			bmp[ n ] = &p->lift_bmp[ 1 ]; ox[ n ] = 0; oy[ n ] = 0; n++;
 			bmp[ n ] = NULL;
 		} else
 		//

@@ -86,6 +86,13 @@ n_nn2_map_dokan_stage_number_get_by_position( n_nn2 *p, n_type_gfx x, n_type_gfx
 #define N_CHIP_HILL_0_0_SP ( 206 ) // left  earth covered by another hill
 #define N_CHIP_HILL_2_0_SP ( 207 ) // right earth covered by another hill
 
+#define N_CHIP_LAND_0_0    ( 210 ) // left   earth
+#define N_CHIP_LAND_1_0    ( 211 ) // middle earth
+#define N_CHIP_LAND_2_0    ( 212 ) // right  earth
+#define N_CHIP_LAND_1_1    ( 213 ) // left   wall edge
+#define N_CHIP_LAND_1_2    ( 214 ) // middle wall
+#define N_CHIP_LAND_1_3    ( 215 ) // right  wall edge
+
 #define N_CHIP_DEBUG       ( 255 )
 
 
@@ -557,6 +564,41 @@ n_chip_init( n_nn2 *p, n_nn2_stage *s )
 			}
 
 		} else
+		if (
+			( N_CHIP_LAND_0_0 <= n_chip_data_kind( data ) )
+			&&
+			( N_CHIP_LAND_1_3 >= n_chip_data_kind( data ) )
+		)
+		{
+
+			int target = n_chip_data_kind( data ) - 210;
+
+			int i = 0;
+			n_posix_loop
+			{
+
+				n_bmp *bmp[ N_SPRITE_MAX ];
+				int     ox[ N_SPRITE_MAX ];
+				int     oy[ N_SPRITE_MAX ];
+
+				int interval = 0;
+				if ( i == 0 )
+				{
+					int n = 0;
+					bmp[ n ] = &s->chip_earth[ target ]; ox[ n ] = 0; oy[ n ] = 0; n++;
+					bmp[ n ] = NULL;
+				} else
+				//
+				{
+					break;
+				}
+
+				n_sprite_set( spr, i, bmp, ox, oy, 0, interval );
+
+				i++;
+			}
+
+		} else
 		if ( N_CHIP_DEBUG == n_chip_data_kind( data ) )
 		{
 
@@ -711,6 +753,12 @@ n_chip_detect_block( n_nn2 *p, u32 data )
 			( p->weather_sprite->invisible == FALSE )
 			&&
 			( N_CHIP_WEATHER == n_chip_data_kind( data ) )
+		)
+		||
+		(
+			( N_CHIP_LAND_0_0 <= n_chip_data_kind( data ) )
+			&&
+			( N_CHIP_LAND_1_3 >= n_chip_data_kind( data ) )
 		)
 	)
 	{

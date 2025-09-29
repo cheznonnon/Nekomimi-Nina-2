@@ -5,23 +5,6 @@
 
 
 
-#include "../nonnon/neutral/time.c"
-
-
-#include "../nonnon/neutral/bmp/ui/rectframe.c"
-#include "../nonnon/neutral/bmp/ui/roundframe.c"
-
-
-#include "../nonnon/game/helper.c"
-#include "../nonnon/game/progressbar.c"
-#include "../nonnon/game/transition.c"
-
-
-#include "../nonnon/win32/gdi.c"
-
-
-
-
 #define N_NN2_SOUND_OFF ( 0 )
 #define N_NN2_SOUND_ON  ( 1 )
 
@@ -36,7 +19,7 @@
 
 //#define N_NN2_STAGE_SHUFFLE
 
-#define N_NN2_STAGE_START        &n_nn2_stage_2
+#define N_NN2_STAGE_START        &n_nn2_stage_1
 
 #define N_NN2_STAGE_NUMBER_CHICK ( 2 )
 #define N_NN2_STAGE_NUMBER_KUINA ( 1 )
@@ -266,7 +249,7 @@ n_nn2_rc_load_map( NSString *name, n_bmp *bmp )
 #define N_NN2_DASH_BRAKE_MSEC ( 200 )
 
 
-#define N_NN2_JUMP_INTERVAL   ( 5 )
+#define N_NN2_JUMP_INTERVAL   ( 2 )
 #define N_NN2_SWIM_INTERVAL   ( 2 )
 
 #define N_NN2_JUMP_STATE_NONE ( 0 )
@@ -313,8 +296,9 @@ n_nn2_rc_load_map( NSString *name, n_bmp *bmp )
 #define N_NN2_STEP_DUCK_FULL ( 50 * p->zoom )
 
 
-#define N_NN2_BGCLOUD_MAX ( 4 )
-#define N_NN2_LIFT_MAX    N_NN2_BGCLOUD_MAX
+#define N_NN2_BGCLOUD_MAX     ( 4 )
+#define N_NN2_BGCLOUD_BMP_MAX ( 6 )
+#define N_NN2_LIFT_BMP_MAX    ( 6 )
 
 
 #define N_OBJECT_KIRAKIRA_MAX ( 100 )
@@ -433,9 +417,9 @@ typedef struct {
 	//n_sprite    cld_v_3_sprite;
 
 	n_sprite    bgcloud_sprite  [ N_NN2_BGCLOUD_MAX ];
-	n_bmp       bgcloud_bmp     [ N_NN2_BGCLOUD_MAX ];
 	u32         bgcloud_interval[ N_NN2_BGCLOUD_MAX ];
 	u32         bgcloud_timer   [ N_NN2_BGCLOUD_MAX ];
+	n_bmp       bgcloud_bmp     [ N_NN2_BGCLOUD_BMP_MAX ];
 
 	BOOL        treasure_ready;
 	int         treasure_phase;
@@ -522,7 +506,7 @@ n_nn2_powerup_init_blue( n_powerup* p )
 	p->dash_interval  = 100;
 	p->dash_step      = 1;
 
-	p->jump_interval  = 5;
+	p->jump_interval  = N_NN2_JUMP_INTERVAL;
 	p->jump_up        = 256;
 	p->jump_fall      = 12;
 	p->jump_lr_walk   = ( 10 / 2 ) * sqrt( 2 );
@@ -548,7 +532,7 @@ n_nn2_powerup_init_pink( n_powerup* p )
 	p->dash_interval  = 100 * 0.5;
 	p->dash_step      = 1   * 1.5;
 
-	p->jump_interval  = 5   * 1.5;
+	p->jump_interval  = N_NN2_JUMP_INTERVAL * 1.5;
 	p->jump_up        = 256 * 1.5;
 	p->jump_fall      = 12;
 	p->jump_lr_walk   = ( 10 / 2 ) * sqrt( 2 );
@@ -598,6 +582,7 @@ typedef struct {
 	n_type_gfx  sy;
 
 	n_bmp      *canvas;
+	n_bmp       canvas_base;
 	n_bmp       canvas_main;
 
 	n_type_gfx  scaler;
@@ -607,6 +592,8 @@ typedef struct {
 
 	NSOperationQueue *queue;
 	int               cores;
+
+	NSBitmapImageRep *rep;
 
 	GCExtendedGamepad *gamepad;
 
@@ -648,6 +635,7 @@ typedef struct {
 
 	int          brick_animation_index;
 	n_sprite    *brick_animation_sprite;
+	BOOL         brick_move_onoff;
 
 	n_type_gfx   map_sx_prv;
 
@@ -794,39 +782,30 @@ typedef struct {
 	n_bmp       nina_pink_sleeve_m;
 	n_bmp       nina_pink_sleeve_r;
 
-	n_bmp       nina_walk_arm_f_1;
 	n_bmp       nina_walk_arm_f_2;
-	//n_bmp       nina_walk_arm_f_3;
+	n_bmp       nina_walk_arm_f_1;
 	n_bmp       nina_walk_arm_n;
 	n_bmp       nina_walk_arm_r_1;
 	n_bmp       nina_walk_arm_r_2;
-	//n_bmp       nina_walk_arm_r_3;
 
-	//n_bmp       nina_walk_leg_f_1;
 	n_bmp       nina_walk_leg_f_2;
-	n_bmp       nina_walk_leg_fd2;
-	n_bmp       nina_walk_leg_f_3;
+	n_bmp       nina_walk_leg_f_1;
+	n_bmp       nina_walk_leg_fd1;
 	n_bmp       nina_walk_leg_n;
-	//n_bmp       nina_walk_leg_r_1;
+	n_bmp       nina_walk_leg_r_1;
 	n_bmp       nina_walk_leg_r_2;
-	n_bmp       nina_walk_leg_r_3;
 
-	//n_bmp       nina_walk_lgS_f_1;
 	n_bmp       nina_walk_lgS_f_2;
-	n_bmp       nina_walk_lgS_fd2;
-	n_bmp       nina_walk_lgS_f_3;
+	n_bmp       nina_walk_lgS_f_1;
+	n_bmp       nina_walk_lgS_fd1;
 	n_bmp       nina_walk_lgS_n;
-	//n_bmp       nina_walk_lgS_r_1;
+	n_bmp       nina_walk_lgS_r_1;
 	n_bmp       nina_walk_lgS_r_2;
-	n_bmp       nina_walk_lgS_r_3;
 
-	n_bmp       nina_walk_amS_f_1;
 	n_bmp       nina_walk_amS_f_2;
-	//n_bmp       nina_walk_amS_f_3;
-	//n_bmp       nina_walk_amS_n;
+	n_bmp       nina_walk_amS_f_1;
 	n_bmp       nina_walk_amS_r_1;
 	n_bmp       nina_walk_amS_r_2;
-	//n_bmp       nina_walk_amS_r_3;
 
 	n_bmp       nina_dash_arm_n;
 	n_bmp       nina_dash_arm_f_1;
@@ -926,7 +905,7 @@ typedef struct {
 
 	n_bmp       fish_bmp;
 
-	n_bmp       lift_bmp[ N_NN2_LIFT_MAX ];
+	n_bmp       lift_bmp[ N_NN2_LIFT_BMP_MAX ];
 	n_bmp       lift_bmp_face;
 
 	n_bmp       mountain_1;
@@ -1623,7 +1602,9 @@ n_nn2_init_canvas( n_nn2 *p )
 	p->sx = 700;
 	p->sy = 700;
 
-	n_bmp_new_fast( &p->canvas_main, p->sx, p->sy );
+	n_bmp_new_fast( &p->canvas_base, p->sx, p->sy );
+
+	p->rep = n_mac_image_NSBitmapImageRep( &p->canvas_base );
 
 	n_bmp_new_fast( &p->bmp_spotlight_canvas, p->sx, p->sy );
 
@@ -1634,12 +1615,13 @@ n_nn2_init_canvas( n_nn2 *p )
 
 #else
 
-	n_bmp_flush( &p->canvas_main, n_bmp_black );
+	n_bmp_flush( &p->canvas_base, n_bmp_black );
 
 	p->bell_onoff = TRUE;
 
 #endif
 
+	n_mac_image_imagerep_alias( p->rep, &p->canvas_main );
 	p->canvas = &p->canvas_main;
 
 
@@ -1846,29 +1828,29 @@ n_nn2_init_rc( n_nn2 *p )
 	{
 		NSOperation *o = [NSBlockOperation blockOperationWithBlock:^{
 
-		n_nn2_rc_load( @"rc/nina/3" , &p->nina_walk_leg_f_2, p->scaler );
-		n_nn2_rc_load( @"rc/nina/4" , &p->nina_walk_leg_fd2, p->scaler );
-		n_nn2_rc_load( @"rc/nina/2" , &p->nina_walk_leg_f_3, p->scaler );
-		n_nn2_rc_load( @"rc/nina/15", &p->nina_walk_leg_n  , p->scaler );
-		n_nn2_rc_load( @"rc/nina/13", &p->nina_walk_leg_r_2, p->scaler );
-		n_nn2_rc_load( @"rc/nina/12", &p->nina_walk_leg_r_3, p->scaler );
 
-
-		n_nn2_rc_load( @"rc/nina/19", &p->nina_walk_arm_r_1, p->scaler );
-		n_nn2_rc_load( @"rc/nina/18", &p->nina_walk_arm_r_2, p->scaler );
-		n_nn2_rc_load( @"rc/nina/20", &p->nina_walk_arm_n  , p->scaler );
-		n_nn2_rc_load( @"rc/nina/17", &p->nina_walk_arm_f_1, p->scaler );
 		n_nn2_rc_load( @"rc/nina/16", &p->nina_walk_arm_f_2, p->scaler );
+		n_nn2_rc_load( @"rc/nina/17", &p->nina_walk_arm_f_1, p->scaler );
+		n_nn2_rc_load( @"rc/nina/18", &p->nina_walk_arm_n  , p->scaler );
+		n_nn2_rc_load( @"rc/nina/19", &p->nina_walk_arm_r_1, p->scaler );
+		n_nn2_rc_load( @"rc/nina/20", &p->nina_walk_arm_r_2, p->scaler );
+
+		n_nn2_rc_load( @"rc/nina/12", &p->nina_walk_leg_r_2, p->scaler );
+		n_nn2_rc_load( @"rc/nina/13", &p->nina_walk_leg_r_1, p->scaler );
+		n_nn2_rc_load( @"rc/nina/15", &p->nina_walk_leg_n  , p->scaler );
+		n_nn2_rc_load( @"rc/nina/3" , &p->nina_walk_leg_f_1, p->scaler );
+		n_nn2_rc_load( @"rc/nina/4" , &p->nina_walk_leg_fd1, p->scaler );
+		n_nn2_rc_load( @"rc/nina/2" , &p->nina_walk_leg_f_2, p->scaler );
 
 
-		n_nn2_rc_load( @"rc/nina/31", &p->nina_dash_arm_n  , p->scaler );
-		n_nn2_rc_load( @"rc/nina/33", &p->nina_dash_arm_r_1, p->scaler );
-		n_nn2_rc_load( @"rc/nina/32", &p->nina_dash_arm_r_2, p->scaler );
-		n_nn2_rc_load( @"rc/nina/30", &p->nina_dash_arm_f_1, p->scaler );
 		n_nn2_rc_load( @"rc/nina/29", &p->nina_dash_arm_f_2, p->scaler );
+		n_nn2_rc_load( @"rc/nina/30", &p->nina_dash_arm_f_1, p->scaler );
+		n_nn2_rc_load( @"rc/nina/31", &p->nina_dash_arm_n  , p->scaler );
+		n_nn2_rc_load( @"rc/nina/32", &p->nina_dash_arm_r_1, p->scaler );
+		n_nn2_rc_load( @"rc/nina/33", &p->nina_dash_arm_r_2, p->scaler );
 
-		n_nn2_rc_load( @"rc/nina/34", &p->nina_dash_leg_f_1, p->scaler );
-		n_nn2_rc_load( @"rc/nina/35", &p->nina_dash_leg_f_2, p->scaler );
+		n_nn2_rc_load( @"rc/nina/34", &p->nina_dash_leg_f_2, p->scaler );
+		n_nn2_rc_load( @"rc/nina/35", &p->nina_dash_leg_f_1, p->scaler );
 		n_nn2_rc_load( @"rc/nina/12", &p->nina_dash_leg_r_1, p->scaler );
 		n_nn2_rc_load( @"rc/nina/36", &p->nina_dash_leg_r_2, p->scaler );
 
@@ -1877,26 +1859,25 @@ n_nn2_init_rc( n_nn2 *p )
 
 		n_nn2_walk_shadow( &p->nina_walk_leg_n  , &p->nina_walk_lgS_n   );
 
+		n_nn2_walk_shadow( &p->nina_walk_leg_f_1, &p->nina_walk_lgS_f_1 );
+		n_nn2_walk_shadow( &p->nina_walk_leg_fd1, &p->nina_walk_lgS_fd1 );
 		n_nn2_walk_shadow( &p->nina_walk_leg_f_2, &p->nina_walk_lgS_f_2 );
-		n_nn2_walk_shadow( &p->nina_walk_leg_fd2, &p->nina_walk_lgS_fd2 );
-		n_nn2_walk_shadow( &p->nina_walk_leg_f_3, &p->nina_walk_lgS_f_3 );
 
+		n_nn2_walk_shadow( &p->nina_walk_leg_r_1, &p->nina_walk_lgS_r_1 );
 		n_nn2_walk_shadow( &p->nina_walk_leg_r_2, &p->nina_walk_lgS_r_2 );
-		n_nn2_walk_shadow( &p->nina_walk_leg_r_3, &p->nina_walk_lgS_r_3 );
 
+		n_nn2_walk_shadow( &p->nina_walk_arm_f_2, &p->nina_walk_amS_f_2 );
+		n_nn2_walk_shadow( &p->nina_walk_arm_f_1, &p->nina_walk_amS_f_1 );
 		n_nn2_walk_shadow( &p->nina_walk_arm_r_1, &p->nina_walk_amS_r_1 );
 		n_nn2_walk_shadow( &p->nina_walk_arm_r_2, &p->nina_walk_amS_r_2 );
-
-		n_nn2_walk_shadow( &p->nina_walk_arm_f_1, &p->nina_walk_amS_f_1 );
-		n_nn2_walk_shadow( &p->nina_walk_arm_f_2, &p->nina_walk_amS_f_2 );
 
 		n_nn2_walk_shadow( &p->nina_dash_arm_r_1, &p->nina_dash_amS_r_1 );
 		n_nn2_walk_shadow( &p->nina_dash_arm_r_2, &p->nina_dash_amS_r_2 );
 		n_nn2_walk_shadow( &p->nina_dash_arm_f_1, &p->nina_dash_amS_f_1 );
 		n_nn2_walk_shadow( &p->nina_dash_arm_f_2, &p->nina_dash_amS_f_2 );
 
-		n_nn2_walk_shadow( &p->nina_dash_leg_f_1, &p->nina_dash_lgS_f_1 );
 		n_nn2_walk_shadow( &p->nina_dash_leg_f_2, &p->nina_dash_lgS_f_2 );
+		n_nn2_walk_shadow( &p->nina_dash_leg_f_1, &p->nina_dash_lgS_f_1 );
 		n_nn2_walk_shadow( &p->nina_dash_leg_r_1, &p->nina_dash_lgS_r_1 );
 		n_nn2_walk_shadow( &p->nina_dash_leg_r_2, &p->nina_dash_lgS_r_2 );
 
@@ -1944,26 +1925,26 @@ n_nn2_init_rc( n_nn2 *p )
 		NSOperation *o = [NSBlockOperation blockOperationWithBlock:^{
 
 		p->nina_walk_step = N_NN2_STEP_INIT;
-		n_chara_walk_init( p, 2 );
+		n_chara_walk_init( p );
 
-		n_chara_idle_init( p, 5 );
-		n_chara_dash_init( p, 2 );
+		n_chara_idle_init( p );
+		n_chara_dash_init( p );
 
-		n_chara_idle_cliff_init( p, 2 );
+		n_chara_idle_cliff_init( p );
 
-		n_chara_suck_init( p, 5 );
+		n_chara_suck_init( p );
 
-		n_chara_duck_init  ( p, 3 );
-		n_chara_unduck_init( p, 3 );
+		n_chara_duck_init  ( p );
+		n_chara_unduck_init( p );
 
-		n_chara_jump_init( p, N_NN2_JUMP_INTERVAL );
+		n_chara_jump_init( p );
 
-		n_chara_land_init( p, 3 );
-		n_chara_land_swim_init( p, 3 );
+		n_chara_land_init( p );
+		n_chara_land_swim_init( p );
 
-		n_chara_slip_init( p, 5 );
+		n_chara_slip_init( p );
 
-		n_chara_turn_init( p, 3 );
+		n_chara_turn_init( p );
 
 		}];
 		[p->queue addOperation:o];
@@ -2025,10 +2006,18 @@ n_nn2_init_rc( n_nn2 *p )
 		n_nn2_rc_load( @"rc/object/lift/face", &p->lift_bmp_face , p->scaler );
 //n_nn2_debug_bmp_save( p, &p->lift_bmp_face );
 
-		n_object_lift_load_single( p, &p->lift_bmp[ 0 ], 1.000 );
-		n_object_lift_load_single( p, &p->lift_bmp[ 1 ], 0.975 );
-		n_object_lift_load_single( p, &p->lift_bmp[ 2 ], 0.955 );
-		n_object_lift_load_single( p, &p->lift_bmp[ 3 ], 0.975 );
+		{
+			n_type_real x = 0.0;
+
+			int i = 0;
+			n_posix_loop
+			{
+				n_object_lift_load_single( p, &p->lift_bmp[ i ], cos( M_PI * 2.0 * x ) );
+
+				i++; x += 0.01;
+				if ( i >= N_NN2_LIFT_BMP_MAX ) { break; }
+			}
+		}
 
 		n_object_kirakira_init( p );
 
@@ -2075,7 +2064,7 @@ n_nn2_init_rc( n_nn2 *p )
 	p->nina_margin_fwrd = n_chara_margin_detect( p, &p->nina_walk_leg_n    , N_CHARA_MARGIN_DETECT_FWRD );
 	p->nina_margin_rear = n_chara_margin_detect( p, &p->nina_walk_leg_n    , N_CHARA_MARGIN_DETECT_REAR );
 	p->nina_margin_swim = n_chara_margin_detect( p, &p->nina_jump_leg_3    , N_CHARA_MARGIN_DETECT_REAR );
-	//p->nina_margin_fmax = n_chara_margin_detect( p, &p->nina_walk_leg_f_3  , N_CHARA_MARGIN_DETECT_FWRD );
+	//p->nina_margin_fmax = n_chara_margin_detect( p, &p->nina_walk_leg_f_2  , N_CHARA_MARGIN_DETECT_FWRD );
 
 	//p->nina_margin_fmax = ( p->nina_margin_fwrd + p->nina_margin_fmax ) / 2;
 
@@ -3100,37 +3089,7 @@ n_nn2_loop( n_nn2 *p )
 	}
 
 
-	if ( p->transition_lock )
-	{
-
-		//
-
-	} else
-	if ( p->stage->nina_y > p->stage->map_sy )
-	{
-		p->transition_lock = TRUE;
-
-		if ( p->stage == &n_nn2_stage_0 )
-		{
-			p->bell_reset_onoff = TRUE;
-		}
-
-		if ( n_object_birds_is_caught( p ) )
-		{
-			n_object_handheld_off( p );
-		}
-
-		n_type_gfx x = p->stage->nina_x + ( p->nina_sx / 2 ); x /= p->mapchip_unit;
-		n_type_gfx y = N_BMP_SY( &p->stage->map_dokan ) - 1;
-
-		u32 data = 0; n_bmp_ptr_get( &p->stage->map_dokan, x, y, &data );
-
-		int stage_number = n_nn2_map_dokan_data_kind( data );
-//NSLog( @"Warp to %d", stage_number );
-
-		extern void n_nn2_stage_transition_go( n_nn2 *p, int stage_number );
-		n_nn2_stage_transition_go( p, stage_number );
-	}
+	n_chara_collision_hole( p );
 
 
 	if ( p->bounce_landed == FALSE )

@@ -52,6 +52,8 @@ n_brick_move_animation( n_nn2 *p, n_type_gfx tx, n_type_gfx ty )
 				s->override_y       = 0;
 				s->brick_move_phase = 0;
 
+				p->brick_move_onoff = FALSE;
+
 				p->weather_transition_ready = FALSE;
 			}
 		}
@@ -100,6 +102,8 @@ n_brick_move_action_on( n_nn2 *p, n_type_gfx tx, n_type_gfx ty, BOOL is_heading 
 
 	if ( s->brick_move_phase == 0 )
 	{
+		p->brick_move_onoff = TRUE;
+
 		s->brick_move_phase = 1;
 		s->brick_move_step  = N_NN2_BRICK_MOVE_STEP;
 		s->brick_move_max   = N_NN2_BRICK_MOVE_MAX;

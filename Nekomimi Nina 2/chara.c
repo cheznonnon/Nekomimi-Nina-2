@@ -3,6 +3,9 @@
 // License : GPL http://www.gnu.org/copyleft/gpl.html
 
 
+// [!] : Copilot Optimization Done
+
+
 
 
 extern BOOL n_object_treasure_is_running( n_nn2 *p );
@@ -92,64 +95,75 @@ n_chara_bmp_copy_all( n_nn2 *p, n_bmp *f, n_bmp *t, n_type_gfx ox, n_type_gfx oy
 
 		NSOperation *o = [NSBlockOperation blockOperationWithBlock:^{
 
-		n_type_gfx fx = 0; if ( direction == N_NN2_DIRECTION_RIGHT ) { fx = N_BMP_SX( f ) - 1; }
-		n_type_gfx fy = i;
-		n_type_gfx tx = 0;
-		n_posix_loop
-		{
+			/* cache hot fields locally to reduce repeated lookups */
+			n_bmp *lf = f;
+			n_bmp *lt = t;
+			n_type_gfx local_bmpsx = bmpsx;
+			n_type_gfx local_bmpsy = bmpsy;
+			int      local_cores = p->cores;
+			u32      local_blend = p->global_blend;
 
-			n_posix_bool write_needed = n_posix_false;
+			n_type_gfx fx = (direction == N_NN2_DIRECTION_RIGHT) ? (local_bmpsx - 1) : 0;
+			n_type_gfx fy = i;
+			int tx = 0;
 
-			if (
-				( n_bmp_ptr_is_accessible( f,      fx,      fy ) )
-				&&
-				( n_bmp_ptr_is_accessible( t, ox + tx, oy + fy ) )
-			)
+			for (;;)
 			{
-				u32 color = n_bmp_composite_pixel_fast
-				(
-					f, t,
-					fx, fy, ox + tx, oy + fy,
-					n_posix_false,
-					n_posix_false,
-					n_posix_true,
-					n_posix_false,
-					p->global_blend,
-					&write_needed
-				);
+				n_posix_bool write_needed = n_posix_false;
 
-				if ( write_needed )
+				/* check source and destination pixel accessibility once per pixel */
+				if ( ( n_bmp_ptr_is_accessible( lf, fx, fy ) ) && ( n_bmp_ptr_is_accessible( lt, ox + tx, oy + fy ) ) )
 				{
-					n_bmp_ptr_set_fast( t, ox + tx, oy + fy, color );
+					u32 color = n_bmp_composite_pixel_fast(
+						lf, lt,
+						fx, fy, ox + tx, oy + fy,
+						n_posix_false,
+						n_posix_false,
+						n_posix_true,
+						n_posix_false,
+						local_blend,
+						&write_needed
+					);
+
+					if ( write_needed )
+					{
+						n_bmp_ptr_set_fast( lt, ox + tx, oy + fy, color );
+					}
+				}
+
+				if ( direction == N_NN2_DIRECTION_RIGHT )
+				{
+					if ( fx == 0 )
+					{
+						fx = local_bmpsx - 1;
+						tx = 0;
+
+						fy += local_cores;
+						if ( fy >= local_bmpsy ) { break; }
+					}
+					else
+					{
+						fx--;
+						tx++;
+					}
+				}
+				else
+				{
+					if ( fx + 1 >= local_bmpsx )
+					{
+						fx = 0;
+						tx = 0;
+
+						fy += local_cores;
+						if ( fy >= local_bmpsy ) { break; }
+					}
+					else
+					{
+						fx++;
+						tx++;
+					}
 				}
 			}
-
-
-			if ( direction == N_NN2_DIRECTION_RIGHT )
-			{
-				fx--;
-				tx++;
-				if ( fx < 0 )
-				{
-					fx = N_BMP_SX( f ) - 1;
-					tx = 0;
-
-					fy += p->cores;
-					if ( fy >= bmpsy ) { break; }
-				}
-			} else {
-				fx++;
-				tx++;
-				if ( fx >= bmpsx )
-				{
-					fx = 0;
-					tx = 0;
-
-					fy += p->cores;
-					if ( fy >= bmpsy ) { break; }
-				}
-			}
-		}
 
 		}];
 
@@ -500,175 +514,122 @@ n_chara_swim_loop( n_nn2 *p, n_bmp *bmp )
 
 
 void
-n_chara_idle_init( n_nn2 *p, int interval )
+n_chara_idle_init( n_nn2 *p )
 {
 
-	n_sprite_zero( &n_chara_sprite_idle );
+	n_sprite *s = &n_chara_sprite_idle;
+
+
+	const int max_frames = 6;
+
+
+	n_sprite_zero( s );
+
+
+	int ox[ N_SPRITE_MAX ]; n_memory_zero( ox, N_SPRITE_MAX * sizeof( int ) );
+	int oy[ N_SPRITE_MAX ]; n_memory_zero( oy, N_SPRITE_MAX * sizeof( int ) );
+
 
 	int i = 0;
 	n_posix_loop
 	{
-
-		n_bmp *bmp[ N_SPRITE_MAX ];
-		int     ox[ N_SPRITE_MAX ];
-		int     oy[ N_SPRITE_MAX ];
+		int interval = 2;
 
 		if ( i == 0 )
 		{
 			interval = 200;
+		}
 
-			int n = 0;
-			bmp[ n ] = &p->nina_stub_body    ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_stub_hip     ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_stub_boob    ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_head    ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_hair_r  ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_neko    ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_hair_s  ; ox[ n ] =  0; oy[ n ] =  0; n++; // Hair Side
-			bmp[ n ] = &p->nina_walk_hair_f  ; ox[ n ] =  0; oy[ n ] =  0; n++; // Hair 1
-			bmp[ n ] = &p->nina_walk_leg_n   ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_arm_n   ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_stub_sleeve_m; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = NULL;
+
+		n_bmp *bmp[ N_SPRITE_MAX ];
+
+		bmp[  0 ] = &p->nina_stub_body    ;
+		bmp[  1 ] = &p->nina_stub_hip     ;
+		bmp[  2 ] = &p->nina_stub_boob    ;
+		bmp[  3 ] = &p->nina_walk_head    ;
+		bmp[  4 ] = &p->nina_walk_hair_r  ;
+		bmp[  5 ] = &p->nina_walk_neko    ;
+		bmp[  6 ] = &p->nina_walk_hair_s  ;
+		bmp[  7 ] = &p->nina_walk_hair_f  ;
+		bmp[  8 ] = &p->nina_walk_lgS_n   ;
+		bmp[  9 ] = &p->nina_walk_leg_n   ;
+		bmp[ 10 ] = &p->nina_walk_arm_n   ;
+		bmp[ 11 ] = &p->nina_stub_sleeve_m;
+		bmp[ 12 ] = NULL;
+
+
+		n_sprite_set( s, i, bmp, ox,oy, 0, interval );
+
+
+		i++;
+		if ( i >= max_frames ) { break; }
+	}
+
+
+	i = 0;
+	n_posix_loop
+	{//break;
+
+		n_sprite_single *obj = &s->obj[ i ];
+
+		if ( i == 0 )
+		{
+			//
 		} else
 		if ( i == 1 )
 		{
-			interval = 2;
+			obj->bmp[ 9 ] = &p->nina_idle_leg1; 
 
-			int n = 0;
-			bmp[ n ] = &p->nina_stub_body    ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_stub_hip     ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_stub_boob    ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_head    ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_hair_r  ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_neko    ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_hair_s  ; ox[ n ] =  0; oy[ n ] =  0; n++; // Hair Side
-			bmp[ n ] = &p->nina_walk_hair_f  ; ox[ n ] =  0; oy[ n ] =  0; n++; // Hair 1
-			bmp[ n ] = &p->nina_walk_leg_n   ; ox[ n ] = -1; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_arm_n   ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_stub_sleeve_m; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = NULL;
+			obj->oy[ 1 ] = -1; // nina_stub_hip
+			obj->oy[ 2 ] = -1; // nina_stub_boob
+			obj->oy[ 4 ] = -1; // nina_walk_hair_r
+			obj->oy[ 6 ] = -1; // nina_walk_hair_s
+			obj->oy[ 7 ] = -1; // nina_walk_hair_f
 		} else
 		if ( i == 2 )
 		{
-			interval = 2;
+			obj->bmp[ 9 ] = &p->nina_idle_leg2; 
 
-			int n = 0;
-			bmp[ n ] = &p->nina_stub_body    ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_stub_hip     ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_stub_boob    ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_head    ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_hair_r  ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_neko    ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_hair_s  ; ox[ n ] =  0; oy[ n ] =  0; n++; // Hair Side
-			bmp[ n ] = &p->nina_walk_hair_f  ; ox[ n ] =  2; oy[ n ] =  0; n++; // Hair 2
-			bmp[ n ] = &p->nina_walk_lgS_n   ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_idle_leg1    ; ox[ n ] = -2; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_arm_n   ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_stub_sleeve_m; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = NULL;
+			obj->oy[ 1 ] = -2; // nina_stub_hip
+			obj->oy[ 2 ] = -2; // nina_stub_boob
+			obj->oy[ 4 ] = -2; // nina_walk_hair_r
+			obj->oy[ 6 ] = -2; // nina_walk_hair_s
+			obj->oy[ 7 ] = -2; // nina_walk_hair_f
 		} else
 		if ( i == 3 )
 		{
-			interval = 2;
+			obj->bmp[ 9 ] = &p->nina_idle_leg1; 
 
-			int n = 0;
-			bmp[ n ] = &p->nina_stub_body    ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_stub_hip     ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_stub_boob    ; ox[ n ] =  0; oy[ n ] = -2; n++;
-			bmp[ n ] = &p->nina_walk_head    ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_hair_r  ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_neko    ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_hair_s  ; ox[ n ] =  0; oy[ n ] =  0; n++; // Hair Side
-			bmp[ n ] = &p->nina_walk_hair_f  ; ox[ n ] =  2; oy[ n ] =  0; n++; // Hair 2
-			bmp[ n ] = &p->nina_walk_lgS_n   ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_idle_leg2    ; ox[ n ] = -3; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_arm_n   ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_stub_sleeve_m; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = NULL;
+			obj->oy[ 1 ] = -1; // nina_stub_hip
+			obj->oy[ 2 ] = -1; // nina_stub_boob
+			obj->oy[ 4 ] = -1; // nina_walk_hair_r
+			obj->oy[ 6 ] = -1; // nina_walk_hair_s
+			obj->oy[ 7 ] = -1; // nina_walk_hair_f
 		} else
 		if ( i == 4 )
 		{
-			interval = 2;
+			obj->bmp[ 9 ] = &p->nina_idle_leg2; 
 
-			int n = 0;
-			bmp[ n ] = &p->nina_stub_body    ; ox[ n ] =  0; oy[ n ] =  2; n++;
-			bmp[ n ] = &p->nina_stub_hip     ; ox[ n ] =  0; oy[ n ] =  3; n++;
-			bmp[ n ] = &p->nina_stub_boob    ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_head    ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_hair_r  ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_neko    ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_hair_s  ; ox[ n ] =  0; oy[ n ] =  0; n++; // Hair Side
-			bmp[ n ] = &p->nina_walk_hair_f  ; ox[ n ] =  0; oy[ n ] = -2; n++; // Hair 3
-			bmp[ n ] = &p->nina_walk_lgS_n   ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_idle_leg1    ; ox[ n ] = -2; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_arm_n   ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_stub_sleeve_m; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = NULL;
+			obj->oy[ 1 ] = -2; // nina_stub_hip
+			obj->oy[ 2 ] = -2; // nina_stub_boob
+			obj->oy[ 4 ] = -2; // nina_walk_hair_r
+			obj->oy[ 6 ] = -2; // nina_walk_hair_s
+			obj->oy[ 7 ] = -2; // nina_walk_hair_f
 		} else
 		if ( i == 5 )
 		{
-			interval = 2;
+			obj->bmp[ 9 ] = &p->nina_idle_leg1; 
 
-			int n = 0;
-			bmp[ n ] = &p->nina_stub_body    ; ox[ n ] =  0; oy[ n ] =  2; n++;
-			bmp[ n ] = &p->nina_stub_hip     ; ox[ n ] =  0; oy[ n ] =  3; n++;
-			bmp[ n ] = &p->nina_stub_boob    ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_head    ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_hair_r  ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_neko    ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_hair_s  ; ox[ n ] =  0; oy[ n ] =  0; n++; // Hair Side
-			bmp[ n ] = &p->nina_walk_hair_f  ; ox[ n ] =  0; oy[ n ] = -2; n++; // Hair 3
-			bmp[ n ] = &p->nina_walk_lgS_n   ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_idle_leg1    ; ox[ n ] = -2; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_arm_n   ; ox[ n ] =  0; oy[ n ] = -2; n++;
-			bmp[ n ] = &p->nina_stub_sleeve_m; ox[ n ] =  0; oy[ n ] = -1; n++;
-			bmp[ n ] = NULL;
-		} else
-		if ( i == 6 )
-		{
-			interval = 2;
-
-			int n = 0;
-			bmp[ n ] = &p->nina_stub_body    ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_stub_hip     ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_stub_boob    ; ox[ n ] =  0; oy[ n ] = -2; n++;
-			bmp[ n ] = &p->nina_walk_head    ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_hair_r  ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_neko    ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_hair_s  ; ox[ n ] =  0; oy[ n ] =  0; n++; // Hair Side
-			bmp[ n ] = &p->nina_walk_hair_f  ; ox[ n ] =  2; oy[ n ] =  0; n++; // Hair 2
-			bmp[ n ] = &p->nina_walk_lgS_n   ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_idle_leg2    ; ox[ n ] = -3; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_arm_n   ; ox[ n ] =  0; oy[ n ] = -2; n++;
-			bmp[ n ] = &p->nina_stub_sleeve_m; ox[ n ] =  0; oy[ n ] = -1; n++;
-			bmp[ n ] = NULL;
-		} else
-		if ( i == 7 )
-		{
-			interval = 2;
-
-			int n = 0;
-			bmp[ n ] = &p->nina_stub_body    ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_stub_hip     ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_stub_boob    ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_head    ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_hair_r  ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_neko    ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_hair_s  ; ox[ n ] =  0; oy[ n ] =  0; n++; // Hair Side
-			bmp[ n ] = &p->nina_walk_hair_f  ; ox[ n ] =  2; oy[ n ] =  0; n++; // Hair 2
-			bmp[ n ] = &p->nina_walk_lgS_n   ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_idle_leg1    ; ox[ n ] = -2; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_arm_n   ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_stub_sleeve_m; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = NULL;
-		} else {
-			break;
+			obj->oy[ 1 ] = -1; // nina_stub_hip
+			obj->oy[ 2 ] = -1; // nina_stub_boob
+			obj->oy[ 4 ] = -1; // nina_walk_hair_r
+			obj->oy[ 6 ] = -1; // nina_walk_hair_s
+			obj->oy[ 7 ] = -1; // nina_walk_hair_f
 		}
 
-		n_sprite_set( &n_chara_sprite_idle, i, bmp, ox, oy, 0, interval );
 
 		i++;
+		if ( i >= max_frames ) { break; }
 	}
 
 
@@ -706,15 +667,15 @@ n_chara_idle_draw( n_nn2 *p )
 		{
 			if ( bmp == &p->nina_walk_arm_n )
 			{
-				bmp = &p->nina_walk_arm_r_2;
+				bmp = &p->nina_walk_arm_f_2;
 			} else
 			if ( bmp == &p->nina_jump_arm_1 )
 			{
-				bmp = &p->nina_walk_arm_r_2;
+				bmp = &p->nina_walk_arm_f_2;
 			} else
 			if ( bmp == &p->nina_jump_arm_2 )
 			{
-				bmp = &p->nina_walk_arm_r_2;
+				bmp = &p->nina_walk_arm_f_2;
 			}
 		}
 
@@ -722,15 +683,15 @@ n_chara_idle_draw( n_nn2 *p )
 		{
 			if ( bmp == &p->nina_walk_arm_n )
 			{
-				bmp = &p->nina_walk_arm_r_2;
+				bmp = &p->nina_walk_arm_f_2;
 			} else
 			if ( bmp == &p->nina_jump_arm_1 )
 			{
-				bmp = &p->nina_walk_arm_r_2;
+				bmp = &p->nina_walk_arm_f_2;
 			} else
 			if ( bmp == &p->nina_jump_arm_2 )
 			{
-				bmp = &p->nina_walk_arm_r_2;
+				bmp = &p->nina_walk_arm_f_2;
 			}
 		}
 
@@ -761,78 +722,83 @@ n_chara_idle_draw( n_nn2 *p )
 
 
 void
-n_chara_idle_cliff_init( n_nn2 *p, int interval )
+n_chara_idle_cliff_init( n_nn2 *p )
 {
 
-	n_sprite_zero( &n_chara_sprite_idle_cliff );
+	n_sprite *s = &n_chara_sprite_idle_cliff;
+
+
+	const int max_frames = 2;
+
+
+	n_sprite_zero( s );
+
+
+	int ox[ N_SPRITE_MAX ]; n_memory_zero( ox, N_SPRITE_MAX * sizeof( int ) );
+	int oy[ N_SPRITE_MAX ]; n_memory_zero( oy, N_SPRITE_MAX * sizeof( int ) );
+	
+	
+	int interval = 3;
+
 
 	int i = 0;
 	n_posix_loop
 	{
 
 		n_bmp *bmp[ N_SPRITE_MAX ];
-		int     ox[ N_SPRITE_MAX ];
-		int     oy[ N_SPRITE_MAX ];
+
+		bmp[  0 ] = &p->nina_stub_body    ;
+		bmp[  1 ] = &p->nina_stub_hip     ;
+		bmp[  2 ] = &p->nina_stub_boob    ;
+		bmp[  3 ] = &p->nina_walk_head    ;
+		bmp[  4 ] = &p->nina_walk_hair_r  ;
+		bmp[  5 ] = &p->nina_walk_neko    ;
+		bmp[  6 ] = &p->nina_walk_hair_s  ;
+		bmp[  7 ] = &p->nina_walk_hair_f  ;
+		bmp[  8 ] = &p->nina_idle_cliff   ;
+		bmp[  9 ] = &p->nina_jump_arm_1   ;
+		bmp[ 10 ] = &p->nina_stub_sleeve_m;
+		bmp[ 11 ] = &p->nina_cliff_sweat  ;
+		bmp[ 12 ] = NULL;
+
+		n_sprite_set( s, i, bmp, ox, oy, 0, interval );
+
+		i++;
+		if ( i >= max_frames ) { break; }
+	}
+
+
+	int n;
+
+	i = 0;
+	n_posix_loop
+	{
+
+		n_sprite_single *obj = &s->obj[ i ];
 
 		if ( i == 0 )
 		{
-			int n = 0;
-			bmp[ n ] = &p->nina_stub_body    ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_stub_hip     ; ox[ n ] =  1; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_stub_boob    ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_head    ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_hair_r  ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_neko    ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_hair_s  ; ox[ n ] =  0; oy[ n ] =  0; n++; // Hair Side
-			bmp[ n ] = &p->nina_walk_hair_f  ; ox[ n ] =  0; oy[ n ] =  0; n++; // Hair 1
-			bmp[ n ] = &p->nina_idle_cliff   ; ox[ n ] =  1; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_jump_arm_1   ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_stub_sleeve_m; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_cliff_sweat  ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = NULL;
+			//
 		} else
 		if ( i == 1 )
 		{
-			int n = 0;
-			bmp[ n ] = &p->nina_stub_body    ; ox[ n ] =  0; oy[ n ] = -1; n++;
-			bmp[ n ] = &p->nina_stub_hip     ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_stub_boob    ; ox[ n ] =  0; oy[ n ] = -1; n++;
-			bmp[ n ] = &p->nina_walk_head    ; ox[ n ] =  1; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_hair_r  ; ox[ n ] =  1; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_neko    ; ox[ n ] =  1; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_hair_s  ; ox[ n ] =  1; oy[ n ] =  0; n++; // Hair Side
-			bmp[ n ] = &p->nina_walk_hair_f  ; ox[ n ] =  1; oy[ n ] =  0; n++; // Hair 1
-			bmp[ n ] = &p->nina_idle_cliff   ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_jump_arm_2   ; ox[ n ] =  1; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_stub_sleeve_m; ox[ n ] =  1; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_cliff_sweat  ; ox[ n ] = -6; oy[ n ] = -6; n++;
-			bmp[ n ] = NULL;
-		} else
-		if ( i == 2 )
-		{
-			int n = 0;
-			bmp[ n ] = &p->nina_stub_body    ; ox[ n ] =  0; oy[ n ] = -1; n++;
-			bmp[ n ] = &p->nina_stub_hip     ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_stub_boob    ; ox[ n ] =  0; oy[ n ] = -1; n++;
-			bmp[ n ] = &p->nina_walk_head    ; ox[ n ] =  1; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_hair_r  ; ox[ n ] =  1; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_neko    ; ox[ n ] =  1; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_hair_s  ; ox[ n ] =  1; oy[ n ] =  0; n++; // Hair Side
-			bmp[ n ] = &p->nina_walk_hair_f  ; ox[ n ] =  1; oy[ n ] =  0; n++; // Hair 1
-			bmp[ n ] = &p->nina_idle_cliff   ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_jump_arm_1   ; ox[ n ] =  1; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_stub_sleeve_m; ox[ n ] =  1; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_cliff_sweat  ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = NULL;
-		} else
-		//
-		{
-			break;
+			n =  0; obj->oy[ n ] =  0; obj->oy[ n ] = -1; // nina_stub_body
+			n =  1; obj->oy[ n ] =  0; obj->oy[ n ] = -1; // nina_stub_hip
+			n =  2; obj->oy[ n ] = -1; obj->oy[ n ] = -1; // nina_stub_boob
+			n =  3; obj->ox[ n ] =  1; obj->oy[ n ] =  0; // nina_walk_head
+			n =  4; obj->ox[ n ] =  1; obj->oy[ n ] = -1; // nina_walk_hair_r
+			n =  5; obj->ox[ n ] =  1; obj->oy[ n ] =  0; // nina_walk_neko
+			n =  6; obj->ox[ n ] =  1; obj->oy[ n ] =  0; // nina_walk_hair_s
+			n =  7; obj->ox[ n ] =  1; obj->oy[ n ] = -1; // nina_walk_hair_f
+			n =  9; obj->ox[ n ] =  1; obj->oy[ n ] =  0; // nina_jump_arm_1
+			n = 10; obj->ox[ n ] =  1; obj->oy[ n ] =  0; // nina_stub_sleeve_m
+			n = 11; obj->ox[ n ] = -6; obj->oy[ n ] = -6; // nina_cliff_sweat
+
+			obj->bmp[ 9 ] = &p->nina_jump_arm_2;
 		}
 
-		n_sprite_set( &n_chara_sprite_idle_cliff, i, bmp, ox, oy, 0, interval );
-
 		i++;
+		if ( i >= max_frames ) { break; }
 	}
 
 
@@ -843,10 +809,25 @@ n_chara_idle_cliff_init( n_nn2 *p, int interval )
 
 
 void
-n_chara_walk_init( n_nn2 *p, int interval )
+n_chara_walk_init( n_nn2 *p )
 {
 
-	n_sprite_zero( &n_chara_sprite_walk );
+	n_sprite *s = &n_chara_sprite_walk;
+
+
+	const int max_frames = 8;
+
+
+	n_sprite_zero( s );
+
+	int ox[ N_SPRITE_MAX ]; n_memory_zero( ox, N_SPRITE_MAX * sizeof( int ) );
+	int oy[ N_SPRITE_MAX ]; n_memory_zero( oy, N_SPRITE_MAX * sizeof( int ) );
+
+
+	int interval = 2;
+
+	// [!] : slow motion for debug
+	//interval = 20;
 
 
 	int i = 0;
@@ -854,156 +835,144 @@ n_chara_walk_init( n_nn2 *p, int interval )
 	{
 
 		n_bmp *bmp[ N_SPRITE_MAX ];
-		int     ox[ N_SPRITE_MAX ];
-		int     oy[ N_SPRITE_MAX ];
 		int    snd = 0;
+
+		bmp[  0 ] = &p->nina_stub         ; // Arm
+		bmp[  1 ] = &p->nina_stub         ; // Leg
+		bmp[  2 ] = &p->nina_stub_body    ;
+		bmp[  3 ] = &p->nina_stub_hip     ;
+		bmp[  4 ] = &p->nina_stub_boob    ;
+		bmp[  5 ] = &p->nina_walk_head    ;
+		bmp[  6 ] = &p->nina_walk_hair_r  ; // Hair Rear
+		bmp[  7 ] = &p->nina_walk_neko    ;
+		bmp[  8 ] = &p->nina_walk_hair_s  ; // Hair Side
+		bmp[  9 ] = &p->nina_walk_hair_f  ; // Hair Front
+		bmp[ 10 ] = &p->nina_walk_leg_n   ;
+		bmp[ 11 ] = &p->nina_walk_arm_n   ;
+		bmp[ 12 ] = &p->nina_stub_sleeve_m;
+		bmp[ 13 ] = NULL;
+
+		if ( ( i == 1 )||( i == 5 ) )
+		{
+			snd = N_NN2_SOUND_WALK;
+		}
+
+		n_sprite_set( s, i, bmp, ox, oy, snd, interval );
+
+		i++;
+		if ( i >= max_frames ) { break; }
+	}
+
+	int n;
+
+	i = 0;
+	n_posix_loop
+	{
+		n_sprite_single *obj = &s->obj[ i ];
+
+
+		if ( i <= 3 )
+		{
+			obj->bmp[ 12 ] = &p->nina_stub_sleeve_l;
+		} else
+		if ( i >= 5 )
+		{
+			obj->bmp[ 12 ] = &p->nina_stub_sleeve_r;
+		}
+
+
+		if ( ( i == 1 )||( i == 5 ) )
+		{
+			n =  2; obj->ox[ n ] =  0; obj->oy[ n ] = -1; // nina_stub_body
+			n =  3; obj->ox[ n ] = -1; obj->oy[ n ] = -1; // nina_stub_hip
+			n =  4; obj->ox[ n ] =  0; obj->oy[ n ] = -1; // nina_stub_boob
+			n =  5; obj->ox[ n ] =  0; obj->oy[ n ] =  1; // nina_walk_head
+			n =  6; obj->ox[ n ] =  0; obj->oy[ n ] =  0; // nina_walk_hair_r
+			n =  7; obj->ox[ n ] =  0; obj->oy[ n ] =  1; // nina_walk_neko
+			n =  8; obj->ox[ n ] =  0; obj->oy[ n ] =  0; // nina_walk_hair_s
+			n =  9; obj->ox[ n ] =  0; obj->oy[ n ] = -1; // nina_walk_hair_f
+			n = 12; obj->ox[ n ] =  0; obj->oy[ n ] = -1; // nina_stub_sleeve
+		} else
+		if ( ( i == 2 )||( i == 6 ) )
+		{
+			n =  2; obj->ox[ n ] =  0; obj->oy[ n ] = -2; // nina_stub_body
+			n =  3; obj->ox[ n ] = -2; obj->oy[ n ] = -2; // nina_stub_hip
+			n =  4; obj->ox[ n ] =  0; obj->oy[ n ] = -2; // nina_stub_boob
+			n =  5; obj->ox[ n ] =  0; obj->oy[ n ] =  2; // nina_walk_head
+			n =  6; obj->ox[ n ] =  0; obj->oy[ n ] = -1; // nina_walk_hair_r
+			n =  7; obj->ox[ n ] =  0; obj->oy[ n ] =  2; // nina_walk_neko
+			n =  8; obj->ox[ n ] =  0; obj->oy[ n ] =  1; // nina_walk_hair_s
+			n =  9; obj->ox[ n ] = -1; obj->oy[ n ] = -2; // nina_walk_hair_f
+			n = 12; obj->ox[ n ] =  0; obj->oy[ n ] = -2; // nina_stub_sleeve
+		} else
+		if ( ( i == 3 )||( i == 7 ) )
+		{
+			n =  2; obj->ox[ n ] =  0; obj->oy[ n ] = -1; // nina_stub_body
+			n =  3; obj->ox[ n ] = -1; obj->oy[ n ] = -1; // nina_stub_hip
+			n =  4; obj->ox[ n ] =  0; obj->oy[ n ] = -1; // nina_stub_boob
+			n =  5; obj->ox[ n ] =  0; obj->oy[ n ] =  1; // nina_walk_head
+			n =  6; obj->ox[ n ] =  0; obj->oy[ n ] =  0; // nina_walk_hair_r
+			n =  7; obj->ox[ n ] =  0; obj->oy[ n ] =  1; // nina_walk_neko
+			n =  8; obj->ox[ n ] =  0; obj->oy[ n ] =  0; // nina_walk_hair_s
+			n =  9; obj->ox[ n ] =  0; obj->oy[ n ] = -1; // nina_walk_hair_f
+			n = 12; obj->ox[ n ] =  0; obj->oy[ n ] = -1; // nina_stub_sleeve
+		}
+
 
 		if ( i == 0 )
 		{
-			int n = 0;
-			bmp[ n ] = &p->nina_stub_body    ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_stub_hip     ; ox[ n ] =  0; oy[ n ] = -1; n++;
-			bmp[ n ] = &p->nina_stub_boob    ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_head    ; ox[ n ] =  0; oy[ n ] =  2; n++;
-			bmp[ n ] = &p->nina_walk_hair_r  ; ox[ n ] =  0; oy[ n ] =  2; n++;
-			bmp[ n ] = &p->nina_walk_neko    ; ox[ n ] =  0; oy[ n ] =  2; n++;
-			bmp[ n ] = &p->nina_walk_hair_s  ; ox[ n ] =  0; oy[ n ] =  2; n++; // Hair Side
-			bmp[ n ] = &p->nina_walk_hair_f  ; ox[ n ] =  0; oy[ n ] =  1; n++; // Hair 1
-			bmp[ n ] = &p->nina_walk_leg_n   ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_arm_n   ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_stub_sleeve_m; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = NULL;
+			// neutral
 		} else
 		if ( i == 1 )
 		{
-			int n = 0;
-			bmp[ n ] = &p->nina_walk_amS_r_1 ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_lgS_r_2 ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_stub_body    ; ox[ n ] =  0; oy[ n ] = -1; n++;
-			bmp[ n ] = &p->nina_stub_hip     ; ox[ n ] =  0; oy[ n ] = -2; n++;
-			bmp[ n ] = &p->nina_stub_boob    ; ox[ n ] =  0; oy[ n ] =  1; n++;
-			bmp[ n ] = &p->nina_walk_head    ; ox[ n ] =  0; oy[ n ] =  2; n++;
-			bmp[ n ] = &p->nina_walk_hair_r  ; ox[ n ] =  0; oy[ n ] =  2; n++;
-			bmp[ n ] = &p->nina_walk_neko    ; ox[ n ] =  0; oy[ n ] =  2; n++;
-			bmp[ n ] = &p->nina_walk_hair_s  ; ox[ n ] =  0; oy[ n ] =  2; n++; // Hair Side
-			bmp[ n ] = &p->nina_walk_hair_f  ; ox[ n ] =  0; oy[ n ] =  1; n++; // Hair 1
-			bmp[ n ] = &p->nina_walk_leg_f_2 ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_arm_f_1 ; ox[ n ] =  0; oy[ n ] = -1; n++;
-			bmp[ n ] = &p->nina_stub_sleeve_r; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = NULL;
-			snd = N_NN2_SOUND_WALK;
+			obj->bmp[  0 ] = &p->nina_walk_amS_r_1;
+			obj->bmp[  1 ] = &p->nina_walk_lgS_f_1;
+			obj->bmp[ 10 ] = &p->nina_walk_leg_r_1;
+			obj->bmp[ 11 ] = &p->nina_walk_arm_f_1;
 		} else
 		if ( i == 2 )
 		{
-			int n = 0;
-			bmp[ n ] = &p->nina_walk_amS_r_2 ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_lgS_r_3 ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_stub_body    ; ox[ n ] =  0; oy[ n ] = -1; n++;
-			bmp[ n ] = &p->nina_stub_hip     ; ox[ n ] =  0; oy[ n ] = -2; n++;
-			bmp[ n ] = &p->nina_stub_boob    ; ox[ n ] =  0; oy[ n ] =  2; n++;
-			bmp[ n ] = &p->nina_walk_head    ; ox[ n ] =  0; oy[ n ] =  1; n++;
-			bmp[ n ] = &p->nina_walk_hair_r  ; ox[ n ] =  0; oy[ n ] =  1; n++;
-			bmp[ n ] = &p->nina_walk_neko    ; ox[ n ] =  0; oy[ n ] =  1; n++;
-			bmp[ n ] = &p->nina_walk_hair_s  ; ox[ n ] =  0; oy[ n ] =  1; n++; // Hair Side
-			bmp[ n ] = &p->nina_walk_hair_f  ; ox[ n ] =  0; oy[ n ] =  1; n++; // Hair 1
-			bmp[ n ] = &p->nina_walk_leg_f_3 ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_arm_f_2 ; ox[ n ] =  0; oy[ n ] = -1; n++;
-			bmp[ n ] = &p->nina_stub_sleeve_r; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = NULL;
+			obj->bmp[  0 ] = &p->nina_walk_amS_r_2;
+			obj->bmp[  1 ] = &p->nina_walk_lgS_f_2;
+			obj->bmp[ 10 ] = &p->nina_walk_leg_r_2;
+			obj->bmp[ 11 ] = &p->nina_walk_arm_f_2;
 		} else
 		if ( i == 3 )
 		{
-			int n = 0;
-			bmp[ n ] = &p->nina_walk_amS_r_1 ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_lgS_r_2 ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_stub_body    ; ox[ n ] =  0; oy[ n ] = -2; n++;
-			bmp[ n ] = &p->nina_stub_hip     ; ox[ n ] =  0; oy[ n ] = -3; n++;
-			bmp[ n ] = &p->nina_stub_boob    ; ox[ n ] =  0; oy[ n ] =  1; n++;
-			bmp[ n ] = &p->nina_walk_head    ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_hair_r  ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_neko    ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_hair_s  ; ox[ n ] =  0; oy[ n ] =  0; n++; // Hair Side
-			bmp[ n ] = &p->nina_walk_hair_f  ; ox[ n ] =  0; oy[ n ] =  0; n++; // Hair 1
-			bmp[ n ] = &p->nina_walk_leg_fd2 ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_arm_f_1 ; ox[ n ] =  0; oy[ n ] = -2; n++;
-			bmp[ n ] = &p->nina_stub_sleeve_r; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = NULL;
+			obj->bmp[  0 ] = &p->nina_walk_amS_r_1;
+			obj->bmp[  1 ] = &p->nina_walk_lgS_fd1;
+			obj->bmp[ 10 ] = &p->nina_walk_leg_r_1;
+			obj->bmp[ 11 ] = &p->nina_walk_arm_f_1;
 		} else
 		if ( i == 4 )
 		{
-			int n = 0;
-			bmp[ n ] = &p->nina_stub_body    ; ox[ n ] =  0; oy[ n ] = -2; n++;
-			bmp[ n ] = &p->nina_stub_hip     ; ox[ n ] =  0; oy[ n ] = -3; n++;
-			bmp[ n ] = &p->nina_stub_boob    ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_head    ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_hair_r  ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_neko    ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_hair_s  ; ox[ n ] =  0; oy[ n ] =  0; n++; // Hair Side
-			bmp[ n ] = &p->nina_walk_hair_f  ; ox[ n ] =  0; oy[ n ] =  0; n++; // Hair 1
-			bmp[ n ] = &p->nina_walk_leg_n   ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_arm_n   ; ox[ n ] =  0; oy[ n ] = -2; n++;
-			bmp[ n ] = &p->nina_stub_sleeve_m; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = NULL;
+			// neutral
 		} else
 		if ( i == 5 )
 		{
-			int n = 0;
-			bmp[ n ] = &p->nina_walk_amS_f_1 ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_lgS_f_2 ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_stub_body    ; ox[ n ] =  0; oy[ n ] = -1; n++;
-			bmp[ n ] = &p->nina_stub_hip     ; ox[ n ] =  0; oy[ n ] = -2; n++;
-			bmp[ n ] = &p->nina_stub_boob    ; ox[ n ] =  0; oy[ n ] =  1; n++;
-			bmp[ n ] = &p->nina_walk_head    ; ox[ n ] =  0; oy[ n ] =  1; n++;
-			bmp[ n ] = &p->nina_walk_hair_r  ; ox[ n ] =  0; oy[ n ] =  1; n++;
-			bmp[ n ] = &p->nina_walk_neko    ; ox[ n ] =  0; oy[ n ] =  1; n++;
-			bmp[ n ] = &p->nina_walk_hair_s  ; ox[ n ] =  0; oy[ n ] =  1; n++; // Hair Side
-			bmp[ n ] = &p->nina_walk_hair_f  ; ox[ n ] =  0; oy[ n ] =  1; n++; // Hair 1
-			bmp[ n ] = &p->nina_walk_leg_r_2 ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_arm_r_1 ; ox[ n ] =  0; oy[ n ] = -1; n++;
-			bmp[ n ] = &p->nina_stub_sleeve_l; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = NULL;
-			snd = N_NN2_SOUND_WALK;
+			obj->bmp[  0 ] = &p->nina_walk_amS_f_1;
+			obj->bmp[  1 ] = &p->nina_walk_lgS_r_1;
+			obj->bmp[ 10 ] = &p->nina_walk_leg_f_1;
+			obj->bmp[ 11 ] = &p->nina_walk_arm_r_1;
 		} else
 		if ( i == 6 )
 		{
-			int n = 0;
-			bmp[ n ] = &p->nina_walk_amS_f_2 ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_lgS_f_3 ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_stub_body    ; ox[ n ] =  0; oy[ n ] = -1; n++;
-			bmp[ n ] = &p->nina_stub_hip     ; ox[ n ] =  0; oy[ n ] = -2; n++;
-			bmp[ n ] = &p->nina_stub_boob    ; ox[ n ] =  0; oy[ n ] =  2; n++;
-			bmp[ n ] = &p->nina_walk_head    ; ox[ n ] =  0; oy[ n ] =  2; n++;
-			bmp[ n ] = &p->nina_walk_hair_r  ; ox[ n ] =  0; oy[ n ] =  2; n++;
-			bmp[ n ] = &p->nina_walk_neko    ; ox[ n ] =  0; oy[ n ] =  2; n++;
-			bmp[ n ] = &p->nina_walk_hair_s  ; ox[ n ] =  0; oy[ n ] =  2; n++; // Hair Side
-			bmp[ n ] = &p->nina_walk_hair_f  ; ox[ n ] =  0; oy[ n ] =  1; n++; // Hair 1
-			bmp[ n ] = &p->nina_walk_leg_r_3 ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_arm_r_2 ; ox[ n ] =  0; oy[ n ] = -1; n++;
-			bmp[ n ] = &p->nina_stub_sleeve_l; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = NULL;
+			obj->bmp[  0 ] = &p->nina_walk_amS_f_2;
+			obj->bmp[  1 ] = &p->nina_walk_lgS_r_2;
+			obj->bmp[ 10 ] = &p->nina_walk_leg_f_2;
+			obj->bmp[ 11 ] = &p->nina_walk_arm_r_2;
 		} else
 		if ( i == 7 )
 		{
-			int n = 0;
-			bmp[ n ] = &p->nina_walk_amS_f_1 ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_lgS_fd2 ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_stub_body    ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_stub_hip     ; ox[ n ] =  0; oy[ n ] = -1; n++;
-			bmp[ n ] = &p->nina_stub_boob    ; ox[ n ] =  0; oy[ n ] =  1; n++;
-			bmp[ n ] = &p->nina_walk_head    ; ox[ n ] =  0; oy[ n ] =  2; n++;
-			bmp[ n ] = &p->nina_walk_hair_r  ; ox[ n ] =  0; oy[ n ] =  2; n++;
-			bmp[ n ] = &p->nina_walk_neko    ; ox[ n ] =  0; oy[ n ] =  2; n++;
-			bmp[ n ] = &p->nina_walk_hair_s  ; ox[ n ] =  0; oy[ n ] =  2; n++; // Hair Side
-			bmp[ n ] = &p->nina_walk_hair_f  ; ox[ n ] =  0; oy[ n ] =  1; n++; // Hair 1
-			bmp[ n ] = &p->nina_walk_leg_r_2 ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_arm_r_1 ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_stub_sleeve_l; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = NULL;
-		} else { break; }
+			obj->bmp[  0 ] = &p->nina_walk_amS_f_1;
+			obj->bmp[  1 ] = &p->nina_walk_lgS_r_1;
+			obj->bmp[ 10 ] = &p->nina_walk_leg_fd1;
+			obj->bmp[ 11 ] = &p->nina_walk_arm_r_1;
+		}
 
-		n_sprite_set( &n_chara_sprite_walk, i, bmp, ox, oy, snd, interval );
 
 		i++;
+		if ( i >= max_frames ) { break; }
 	}
 
 
@@ -1058,7 +1027,7 @@ n_chara_walk_draw( n_nn2 *p )
 				( bmp == &p->nina_walk_amS_r_2 )
 			)
 			{
-				bmp = &p->nina_walk_arm_r_2;
+				bmp = &p->nina_walk_arm_f_2;
 			}
 		}
 
@@ -1089,16 +1058,26 @@ n_chara_walk_draw( n_nn2 *p )
 
 
 void
-n_chara_dash_init( n_nn2 *p, int interval )
+n_chara_dash_init( n_nn2 *p )
 {
 //n_chara_sprite_dash = n_chara_sprite_walk; return;
 
 
-	n_sprite_zero( &n_chara_sprite_dash );
+	n_sprite *s = &n_chara_sprite_dash;
 
+
+	const int max_frames = 8;
+
+
+	n_sprite_zero( s );
+
+	int ox[ N_SPRITE_MAX ]; n_memory_zero( ox, N_SPRITE_MAX * sizeof( int ) );
+	int oy[ N_SPRITE_MAX ]; n_memory_zero( oy, N_SPRITE_MAX * sizeof( int ) );
+
+
+	int interval = 2;
 
 	// [!] : slow motion for debug
-
 	//interval = 20;
 
 
@@ -1107,161 +1086,147 @@ n_chara_dash_init( n_nn2 *p, int interval )
 	{
 
 		n_bmp *bmp[ N_SPRITE_MAX ];
-		int     ox[ N_SPRITE_MAX ];
-		int     oy[ N_SPRITE_MAX ];
 		int    snd = 0;
+
+		bmp[  0 ] = &p->nina_stub         ; // Arm
+		bmp[  1 ] = &p->nina_stub         ; // Leg
+		bmp[  2 ] = &p->nina_stub_body    ;
+		bmp[  3 ] = &p->nina_stub_hip     ;
+		bmp[  4 ] = &p->nina_stub_boob    ;
+		bmp[  5 ] = &p->nina_walk_head    ;
+		bmp[  6 ] = &p->nina_walk_hair_r  ; // Hair Rear
+		bmp[  7 ] = &p->nina_walk_neko    ;
+		bmp[  8 ] = &p->nina_walk_hair_s  ; // Hair Side
+		bmp[  9 ] = &p->nina_walk_hair_f  ; // Hair Front
+		bmp[ 10 ] = &p->nina_walk_leg_n   ;
+		bmp[ 11 ] = &p->nina_dash_arm_n   ;
+		bmp[ 12 ] = &p->nina_stub_sleeve_m;
+		bmp[ 13 ] = NULL;
+
+		if ( ( i == 1 )||( i == 5 ) )
+		{
+			snd = N_NN2_SOUND_WALK;
+		}
+
+		n_sprite_set( s, i, bmp, ox, oy, snd, interval );
+
+		i++;
+		if ( i >= max_frames ) { break; }
+	}
+
+
+	int n;
+
+	i = 0;
+	n_posix_loop
+	{
+		n_sprite_single *obj = &s->obj[ i ];
+
+
+		if ( i <= 3 )
+		{
+			obj->bmp[ 12 ] = &p->nina_stub_sleeve_l;
+		} else
+		if ( i >= 5 )
+		{
+			obj->bmp[ 12 ] = &p->nina_stub_sleeve_r;
+		}
+
+
+		// [!] : currently, parameters are the same as walking
+
+		if ( ( i == 1 )||( i == 5 ) )
+		{
+			n =  2; obj->ox[ n ] =  0; obj->oy[ n ] = -1; // nina_stub_body
+			n =  3; obj->ox[ n ] = -1; obj->oy[ n ] = -1; // nina_stub_hip
+			n =  4; obj->ox[ n ] =  0; obj->oy[ n ] = -1; // nina_stub_boob
+			n =  5; obj->ox[ n ] =  0; obj->oy[ n ] =  1; // nina_walk_head
+			n =  6; obj->ox[ n ] =  0; obj->oy[ n ] =  0; // nina_walk_hair_r
+			n =  7; obj->ox[ n ] =  0; obj->oy[ n ] =  1; // nina_walk_neko
+			n =  8; obj->ox[ n ] =  0; obj->oy[ n ] =  0; // nina_walk_hair_s
+			n =  9; obj->ox[ n ] =  0; obj->oy[ n ] = -1; // nina_walk_hair_f
+			n = 12; obj->ox[ n ] =  0; obj->oy[ n ] = -1; // nina_stub_sleeve
+		} else
+		if ( ( i == 2 )||( i == 6 ) )
+		{
+			n =  2; obj->ox[ n ] =  0; obj->oy[ n ] = -2; // nina_stub_body
+			n =  3; obj->ox[ n ] = -2; obj->oy[ n ] = -2; // nina_stub_hip
+			n =  4; obj->ox[ n ] =  0; obj->oy[ n ] = -2; // nina_stub_boob
+			n =  5; obj->ox[ n ] =  0; obj->oy[ n ] =  2; // nina_walk_head
+			n =  6; obj->ox[ n ] =  0; obj->oy[ n ] = -1; // nina_walk_hair_r
+			n =  7; obj->ox[ n ] =  0; obj->oy[ n ] =  2; // nina_walk_neko
+			n =  8; obj->ox[ n ] =  0; obj->oy[ n ] =  1; // nina_walk_hair_s
+			n =  9; obj->ox[ n ] = -1; obj->oy[ n ] = -2; // nina_walk_hair_f
+			n = 12; obj->ox[ n ] =  0; obj->oy[ n ] = -2; // nina_stub_sleeve
+		} else
+		if ( ( i == 3 )||( i == 7 ) )
+		{
+			n =  2; obj->ox[ n ] =  0; obj->oy[ n ] = -1; // nina_stub_body
+			n =  3; obj->ox[ n ] = -1; obj->oy[ n ] = -1; // nina_stub_hip
+			n =  4; obj->ox[ n ] =  0; obj->oy[ n ] = -1; // nina_stub_boob
+			n =  5; obj->ox[ n ] =  0; obj->oy[ n ] =  1; // nina_walk_head
+			n =  6; obj->ox[ n ] =  0; obj->oy[ n ] =  0; // nina_walk_hair_r
+			n =  7; obj->ox[ n ] =  0; obj->oy[ n ] =  1; // nina_walk_neko
+			n =  8; obj->ox[ n ] =  0; obj->oy[ n ] =  0; // nina_walk_hair_s
+			n =  9; obj->ox[ n ] =  0; obj->oy[ n ] = -1; // nina_walk_hair_f
+			n = 12; obj->ox[ n ] =  0; obj->oy[ n ] = -1; // nina_stub_sleeve
+		}
+
 
 		if ( i == 0 )
 		{
-			int n = 0;
-			bmp[ n ] = &p->nina_stub         ; ox[ n ] =  0; oy[ n ] =  0; n++; // arm
-			bmp[ n ] = &p->nina_stub         ; ox[ n ] =  0; oy[ n ] =  0; n++; // leg
-			bmp[ n ] = &p->nina_stub_body    ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_stub_hip     ; ox[ n ] = -2; oy[ n ] = -1; n++;
-			bmp[ n ] = &p->nina_stub_boob    ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_head    ; ox[ n ] =  0; oy[ n ] =  2; n++;
-			bmp[ n ] = &p->nina_walk_hair_r  ; ox[ n ] =  0; oy[ n ] =  2; n++;
-			bmp[ n ] = &p->nina_walk_neko    ; ox[ n ] =  0; oy[ n ] =  2; n++;
-			bmp[ n ] = &p->nina_walk_hair_s  ; ox[ n ] =  0; oy[ n ] =  2; n++; // Hair Side
-			bmp[ n ] = &p->nina_walk_hair_f  ; ox[ n ] =  0; oy[ n ] =  0; n++; // Hair 1
-			bmp[ n ] = &p->nina_walk_leg_n   ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_dash_arm_n   ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_stub_sleeve_m; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = NULL;
+			// neutral
 		} else
 		if ( i == 1 )
 		{
-			int n = 0;
-			bmp[ n ] = &p->nina_dash_amS_r_1 ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_dash_lgS_f_2 ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_stub_body    ; ox[ n ] =  0; oy[ n ] = -1; n++;
-			bmp[ n ] = &p->nina_stub_hip     ; ox[ n ] = -2; oy[ n ] = -2; n++;
-			bmp[ n ] = &p->nina_stub_boob    ; ox[ n ] =  0; oy[ n ] =  1; n++;
-			bmp[ n ] = &p->nina_walk_head    ; ox[ n ] =  0; oy[ n ] =  2; n++;
-			bmp[ n ] = &p->nina_walk_hair_r  ; ox[ n ] =  0; oy[ n ] =  2; n++;
-			bmp[ n ] = &p->nina_walk_neko    ; ox[ n ] =  0; oy[ n ] =  2; n++;
-			bmp[ n ] = &p->nina_walk_hair_s  ; ox[ n ] =  0; oy[ n ] =  2; n++; // Hair Side
-			bmp[ n ] = &p->nina_walk_hair_f  ; ox[ n ] = -1; oy[ n ] =  1; n++; // Hair 1
-			bmp[ n ] = &p->nina_dash_arm_f_1 ; ox[ n ] =  0; oy[ n ] = -1; n++;
-			bmp[ n ] = &p->nina_dash_leg_r_1 ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_stub_sleeve_l; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = NULL;
-			snd = N_NN2_SOUND_WALK;
+			obj->bmp[  0 ] = &p->nina_dash_amS_r_1;
+			obj->bmp[  1 ] = &p->nina_dash_lgS_f_1;
+			obj->bmp[ 10 ] = &p->nina_dash_leg_r_1;
+			obj->bmp[ 11 ] = &p->nina_dash_arm_f_1;
 		} else
 		if ( i == 2 )
 		{
-			int n = 0;
-			bmp[ n ] = &p->nina_dash_amS_r_2 ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_dash_lgS_f_1 ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_stub_body    ; ox[ n ] =  0; oy[ n ] = -1; n++;
-			bmp[ n ] = &p->nina_stub_hip     ; ox[ n ] = -2; oy[ n ] = -2; n++;
-			bmp[ n ] = &p->nina_stub_boob    ; ox[ n ] =  0; oy[ n ] =  2; n++;
-			bmp[ n ] = &p->nina_walk_head    ; ox[ n ] =  0; oy[ n ] =  1; n++;
-			bmp[ n ] = &p->nina_walk_hair_r  ; ox[ n ] =  0; oy[ n ] =  1; n++;
-			bmp[ n ] = &p->nina_walk_neko    ; ox[ n ] =  0; oy[ n ] =  1; n++;
-			bmp[ n ] = &p->nina_walk_hair_s  ; ox[ n ] =  0; oy[ n ] =  1; n++; // Hair Side
-			bmp[ n ] = &p->nina_walk_hair_f  ; ox[ n ] = -1; oy[ n ] =  2; n++; // Hair 1
-			bmp[ n ] = &p->nina_dash_arm_f_2 ; ox[ n ] =  0; oy[ n ] = -1; n++;
-			bmp[ n ] = &p->nina_dash_leg_r_2 ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_stub_sleeve_l; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = NULL;
+			obj->bmp[  0 ] = &p->nina_dash_amS_r_2;
+			obj->bmp[  1 ] = &p->nina_dash_lgS_f_2;
+			obj->bmp[ 10 ] = &p->nina_dash_leg_r_2;
+			obj->bmp[ 11 ] = &p->nina_dash_arm_f_2;
 		} else
 		if ( i == 3 )
 		{
-			int n = 0;
-			bmp[ n ] = &p->nina_dash_amS_r_1 ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_dash_lgS_f_2 ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_stub_body    ; ox[ n ] =  0; oy[ n ] = -2; n++;
-			bmp[ n ] = &p->nina_stub_hip     ; ox[ n ] = -2; oy[ n ] = -3; n++;
-			bmp[ n ] = &p->nina_stub_boob    ; ox[ n ] =  0; oy[ n ] =  1; n++;
-			bmp[ n ] = &p->nina_walk_head    ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_hair_r  ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_neko    ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_hair_s  ; ox[ n ] =  0; oy[ n ] =  0; n++; // Hair Side
-			bmp[ n ] = &p->nina_walk_hair_f  ; ox[ n ] = -1; oy[ n ] =  3; n++; // Hair 1
-			bmp[ n ] = &p->nina_dash_arm_f_1 ; ox[ n ] =  0; oy[ n ] = -2; n++;
-			bmp[ n ] = &p->nina_dash_leg_r_1 ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_stub_sleeve_l; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = NULL;
+			obj->bmp[  0 ] = &p->nina_dash_amS_r_1;
+			obj->bmp[  1 ] = &p->nina_dash_lgS_f_1;
+			obj->bmp[ 10 ] = &p->nina_dash_leg_r_1;
+			obj->bmp[ 11 ] = &p->nina_dash_arm_f_1;
 		} else
 		if ( i == 4 )
 		{
-			int n = 0;
-			bmp[ n ] = &p->nina_stub         ; ox[ n ] =  0; oy[ n ] =  0; n++; // arm
-			bmp[ n ] = &p->nina_stub         ; ox[ n ] =  0; oy[ n ] =  0; n++; // leg
-			bmp[ n ] = &p->nina_stub_body    ; ox[ n ] =  0; oy[ n ] = -2; n++;
-			bmp[ n ] = &p->nina_stub_hip     ; ox[ n ] = -2; oy[ n ] = -3; n++;
-			bmp[ n ] = &p->nina_stub_boob    ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_head    ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_hair_r  ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_neko    ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_hair_s  ; ox[ n ] =  0; oy[ n ] =  0; n++; // Hair Side
-			bmp[ n ] = &p->nina_walk_hair_f  ; ox[ n ] = -0; oy[ n ] =  4; n++; // Hair 1
-			bmp[ n ] = &p->nina_walk_leg_n   ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_dash_arm_n   ; ox[ n ] =  0; oy[ n ] = -2; n++;
-			bmp[ n ] = &p->nina_stub_sleeve_m; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = NULL;
+			// neutral
 		} else
 		if ( i == 5 )
 		{
-			int n = 0;
-			bmp[ n ] = &p->nina_dash_amS_f_1 ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_dash_lgS_r_1 ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_stub_body    ; ox[ n ] =  0; oy[ n ] = -2; n++;
-			bmp[ n ] = &p->nina_stub_hip     ; ox[ n ] = -2; oy[ n ] = -2; n++;
-			bmp[ n ] = &p->nina_stub_boob    ; ox[ n ] =  0; oy[ n ] =  1; n++;
-			bmp[ n ] = &p->nina_walk_head    ; ox[ n ] =  0; oy[ n ] =  1; n++;
-			bmp[ n ] = &p->nina_walk_hair_r  ; ox[ n ] =  0; oy[ n ] =  1; n++;
-			bmp[ n ] = &p->nina_walk_neko    ; ox[ n ] =  0; oy[ n ] =  1; n++;
-			bmp[ n ] = &p->nina_walk_hair_s  ; ox[ n ] =  0; oy[ n ] =  1; n++; // Hair Side
-			bmp[ n ] = &p->nina_walk_hair_f  ; ox[ n ] = -1; oy[ n ] =  3; n++; // Hair 1
-			bmp[ n ] = &p->nina_dash_arm_r_1 ; ox[ n ] =  0; oy[ n ] = -1; n++;
-			bmp[ n ] = &p->nina_dash_leg_f_2 ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_stub_sleeve_r; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = NULL;
-			snd = N_NN2_SOUND_WALK;
+			obj->bmp[  0 ] = &p->nina_dash_amS_f_1;
+			obj->bmp[  1 ] = &p->nina_dash_lgS_r_1;
+			obj->bmp[ 10 ] = &p->nina_dash_leg_f_1;
+			obj->bmp[ 11 ] = &p->nina_dash_arm_r_1;
 		} else
 		if ( i == 6 )
 		{
-			int n = 0;
-			bmp[ n ] = &p->nina_dash_amS_f_2 ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_dash_lgS_r_2 ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_stub_body    ; ox[ n ] =  0; oy[ n ] = -1; n++;
-			bmp[ n ] = &p->nina_stub_hip     ; ox[ n ] = -2; oy[ n ] = -2; n++;
-			bmp[ n ] = &p->nina_stub_boob    ; ox[ n ] =  0; oy[ n ] =  2; n++;
-			bmp[ n ] = &p->nina_walk_head    ; ox[ n ] =  0; oy[ n ] =  2; n++;
-			bmp[ n ] = &p->nina_walk_hair_r  ; ox[ n ] =  0; oy[ n ] =  2; n++;
-			bmp[ n ] = &p->nina_walk_neko    ; ox[ n ] =  0; oy[ n ] =  2; n++;
-			bmp[ n ] = &p->nina_walk_hair_s  ; ox[ n ] =  0; oy[ n ] =  2; n++; // Hair Side
-			bmp[ n ] = &p->nina_walk_hair_f  ; ox[ n ] = -1; oy[ n ] =  2; n++; // Hair 1
-			bmp[ n ] = &p->nina_dash_arm_r_2 ; ox[ n ] =  0; oy[ n ] = -1; n++;
-			bmp[ n ] = &p->nina_dash_leg_f_1 ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_stub_sleeve_r; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = NULL;
+			obj->bmp[  0 ] = &p->nina_dash_amS_f_2;
+			obj->bmp[  1 ] = &p->nina_dash_lgS_r_2;
+			obj->bmp[ 10 ] = &p->nina_dash_leg_f_2;
+			obj->bmp[ 11 ] = &p->nina_dash_arm_r_2;
 		} else
 		if ( i == 7 )
 		{
-			int n = 0;
-			bmp[ n ] = &p->nina_dash_amS_f_1 ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_dash_lgS_r_1 ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_stub_body    ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_stub_hip     ; ox[ n ] = -2; oy[ n ] = -1; n++;
-			bmp[ n ] = &p->nina_stub_boob    ; ox[ n ] =  0; oy[ n ] =  1; n++;
-			bmp[ n ] = &p->nina_walk_head    ; ox[ n ] =  0; oy[ n ] =  2; n++;
-			bmp[ n ] = &p->nina_walk_hair_r  ; ox[ n ] =  0; oy[ n ] =  2; n++;
-			bmp[ n ] = &p->nina_walk_neko    ; ox[ n ] =  0; oy[ n ] =  2; n++;
-			bmp[ n ] = &p->nina_walk_hair_s  ; ox[ n ] =  0; oy[ n ] =  2; n++; // Hair Side
-			bmp[ n ] = &p->nina_walk_hair_f  ; ox[ n ] = -1; oy[ n ] =  1; n++; // Hair 1
-			bmp[ n ] = &p->nina_dash_arm_r_1 ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_dash_leg_f_2 ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_stub_sleeve_r; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = NULL;
-		} else { break; }
+			obj->bmp[  0 ] = &p->nina_dash_amS_f_1;
+			obj->bmp[  1 ] = &p->nina_dash_lgS_r_1;
+			obj->bmp[ 10 ] = &p->nina_dash_leg_f_1;
+			obj->bmp[ 11 ] = &p->nina_dash_arm_r_1;
+		}
 
-		n_sprite_set( &n_chara_sprite_dash, i, bmp, ox, oy, snd, interval );
-//if ( i == 5 ) { break; }
 
 		i++;
+		if ( i >= max_frames ) { break; }
 	}
 
 
@@ -1289,8 +1254,8 @@ n_chara_dash_draw( n_nn2 *p, BOOL is_pre )
 		if ( obj->bmp[ i ] == NULL ) { break; }
 
 		n_bmp *bmp = obj->bmp[ i ];
-		int    ox  = obj-> ox[ i ] / p->scaler;
-		int    oy  = obj-> oy[ i ] / p->scaler;
+		int    ox  = obj-> ox[ i ] * p->zoom;
+		int    oy  = obj-> oy[ i ] * p->zoom;
 
 //ox += n_game_centering( p->sx, N_BMP_SX( bmp ) );
 //oy += n_game_centering( p->sy, N_BMP_SY( bmp ) );
@@ -1327,14 +1292,12 @@ n_chara_dash_draw( n_nn2 *p, BOOL is_pre )
 				( bmp == &p->nina_dash_amS_r_2 )
 			)
 			{
-				bmp = &p->nina_walk_arm_r_2;
+				bmp = &p->nina_walk_arm_f_2;
 			}
 		}
 
 		bmp = n_chara_swim_loop( p, bmp );
 		bmp = n_chara_wink_loop( p, bmp );
-
-		oy *= 2;
 
 		n_chara_bmp_copy_nina( p, bmp, b, ox,oy, p->direction );
 
@@ -1364,43 +1327,47 @@ n_chara_dash_draw( n_nn2 *p, BOOL is_pre )
 
 
 void
-n_chara_slip_init( n_nn2 *p, int interval )
+n_chara_slip_init( n_nn2 *p )
 {
 
-	n_sprite_zero( &n_chara_sprite_slip );
+	n_sprite *s = &n_chara_sprite_slip;
+
+
+	const int max_frames = 1;
+
+
+	n_sprite_zero( s );
+
+	int ox[ N_SPRITE_MAX ]; n_memory_zero( ox, N_SPRITE_MAX * sizeof( int ) );
+	int oy[ N_SPRITE_MAX ]; n_memory_zero( oy, N_SPRITE_MAX * sizeof( int ) );
+
+
+	int interval = 5;
+
 
 	int i = 0;
 	n_posix_loop
 	{
 
 		n_bmp *bmp[ N_SPRITE_MAX ];
-		int     ox[ N_SPRITE_MAX ];
-		int     oy[ N_SPRITE_MAX ];
-		int    snd = 0;
 
-		if ( i == 0 )
-		{
-			int n = 0;
-			bmp[ n ] = &p->nina_stub_body    ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_stub_hip     ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_stub_boob    ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_head    ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_hair_r  ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_neko    ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_hair_s  ; ox[ n ] =  0; oy[ n ] =  0; n++; // Hair Side
-			bmp[ n ] = &p->nina_walk_hair_f  ; ox[ n ] =  0; oy[ n ] =  0; n++; // Hair 1
-			bmp[ n ] = &p->nina_walk_leg_f_2 ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_arm_f_2 ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_stub_sleeve_l; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = NULL;
-			//snd = N_NN2_SOUND_BRAKE;
-		} else {
-			break;
-		}
+		bmp[  0 ] = &p->nina_stub_body    ;
+		bmp[  1 ] = &p->nina_stub_hip     ;
+		bmp[  2 ] = &p->nina_stub_boob    ;
+		bmp[  3 ] = &p->nina_walk_head    ;
+		bmp[  4 ] = &p->nina_walk_hair_r  ;
+		bmp[  5 ] = &p->nina_walk_neko    ;
+		bmp[  6 ] = &p->nina_walk_hair_s  ;
+		bmp[  7 ] = &p->nina_walk_hair_f  ;
+		bmp[  8 ] = &p->nina_walk_leg_f_2 ;
+		bmp[  9 ] = &p->nina_walk_arm_r_2 ;
+		bmp[ 10 ] = &p->nina_stub_sleeve_l;
+		bmp[ 11 ] = NULL;
 
-		n_sprite_set( &n_chara_sprite_slip, i, bmp, ox, oy, snd, interval );
+		n_sprite_set( s, i, bmp, ox, oy, 0, interval );
 
 		i++;
+		if ( i >= max_frames ) { break; }
 	}
 
 
@@ -1432,9 +1399,9 @@ n_chara_slip_draw( n_nn2 *p )
 
 		if ( p->object_handheld_onoff )
 		{
-			if ( bmp == &p->nina_walk_arm_f_2 )
+			if ( bmp == &p->nina_walk_arm_r_2 )
 			{
-				bmp = &p->nina_walk_arm_r_2;
+				bmp = &p->nina_walk_arm_f_2;
 			}
 		}
 
@@ -1462,10 +1429,23 @@ n_chara_slip_draw( n_nn2 *p )
 
 
 void
-n_chara_duck_init( n_nn2 *p, int interval )
+n_chara_duck_init( n_nn2 *p )
 {
 
-	n_sprite_zero( &n_chara_sprite_duck );
+	n_sprite *s = &n_chara_sprite_duck;
+
+
+	const int max_frames = 2;
+
+
+	n_sprite_zero( s );
+
+	int ox[ N_SPRITE_MAX ]; n_memory_zero( ox, N_SPRITE_MAX * sizeof( int ) );
+	int oy[ N_SPRITE_MAX ]; n_memory_zero( oy, N_SPRITE_MAX * sizeof( int ) );
+
+
+	int interval = 2;
+
 
 	n_type_gfx hf = N_NN2_STEP_DUCK_HALF;
 	n_type_gfx fl = N_NN2_STEP_DUCK_FULL;
@@ -1475,8 +1455,6 @@ n_chara_duck_init( n_nn2 *p, int interval )
 	{
 
 		n_bmp *bmp[ N_SPRITE_MAX ];
-		int     ox[ N_SPRITE_MAX ];
-		int     oy[ N_SPRITE_MAX ];
 
 		if ( i == 0 )
 		{
@@ -1507,13 +1485,12 @@ n_chara_duck_init( n_nn2 *p, int interval )
 			bmp[ n ] = &p->nina_duck_full_hair_side ; ox[ n ] =  0; oy[ n ] =  0; n++;
 			bmp[ n ] = &p->nina_duck_full_hair_front; ox[ n ] =  0; oy[ n ] =  0; n++;
 			bmp[ n ] = NULL;
-		} else {
-			break;
 		}
 
-		n_sprite_set( &n_chara_sprite_duck, i, bmp, ox, oy, 0, interval );
+		n_sprite_set( s, i, bmp, ox, oy, 0, interval );
 
 		i++;
+		if ( i >= max_frames ) { break; }
 	}
 
 
@@ -1521,10 +1498,23 @@ n_chara_duck_init( n_nn2 *p, int interval )
 }
 
 void
-n_chara_unduck_init( n_nn2 *p, int interval )
+n_chara_unduck_init( n_nn2 *p )
 {
 
-	n_sprite_zero( &n_chara_sprite_unduck );
+	n_sprite *s = &n_chara_sprite_unduck;
+
+
+	const int max_frames = 2;
+
+
+	n_sprite_zero( s );
+
+	int ox[ N_SPRITE_MAX ]; n_memory_zero( ox, N_SPRITE_MAX * sizeof( int ) );
+	int oy[ N_SPRITE_MAX ]; n_memory_zero( oy, N_SPRITE_MAX * sizeof( int ) );
+
+
+	int interval = 2;
+
 
 	n_type_gfx hf = N_NN2_STEP_DUCK_HALF;
 	n_type_gfx fl = N_NN2_STEP_DUCK_FULL;
@@ -1534,8 +1524,6 @@ n_chara_unduck_init( n_nn2 *p, int interval )
 	{
 
 		n_bmp *bmp[ N_SPRITE_MAX ];
-		int     ox[ N_SPRITE_MAX ];
-		int     oy[ N_SPRITE_MAX ];
 
 		if ( i == 0 )
 		{
@@ -1566,15 +1554,12 @@ n_chara_unduck_init( n_nn2 *p, int interval )
 			bmp[ n ] = &p->nina_duck_half_hair_side ; ox[ n ] =  0; oy[ n ] =  0; n++;
 			bmp[ n ] = &p->nina_duck_half_hair_front; ox[ n ] =  0; oy[ n ] =  0; n++;
 			bmp[ n ] = NULL;
-		} else
-		//
-		{
-			break;
 		}
 
-		n_sprite_set( &n_chara_sprite_unduck, i, bmp, ox, oy, 0, interval );
+		n_sprite_set( s, i, bmp, ox, oy, 0, interval );
 
 		i++;
+		if ( i >= max_frames ) { break; }
 	}
 
 
@@ -1652,96 +1637,101 @@ n_chara_duck_draw( n_nn2 *p )
 
 
 void
-n_chara_jump_init( n_nn2 *p, int interval )
+n_chara_jump_init( n_nn2 *p )
 {
 
-	n_sprite_zero( &n_chara_sprite_jump );
+	n_sprite *s = &n_chara_sprite_jump;
+
+
+	const int max_frames = 4;
+
+
+	n_sprite_zero( s );
+
+	int ox[ N_SPRITE_MAX ]; n_memory_zero( ox, N_SPRITE_MAX * sizeof( int ) );
+	int oy[ N_SPRITE_MAX ]; n_memory_zero( oy, N_SPRITE_MAX * sizeof( int ) );
+
+
+	int interval = 1;
+
 
 	int i = 0;
 	n_posix_loop
 	{
 
 		n_bmp *bmp[ N_SPRITE_MAX ];
-		int     ox[ N_SPRITE_MAX ];
-		int     oy[ N_SPRITE_MAX ];
 		int    snd = 0;
+
+		bmp[  0 ] = &p->nina_stub_body    ;
+		bmp[  1 ] = &p->nina_stub_hip     ;
+		bmp[  2 ] = &p->nina_stub_boob    ;
+		bmp[  3 ] = &p->nina_walk_head    ;
+		bmp[  4 ] = &p->nina_walk_ear     ;
+		bmp[  5 ] = &p->nina_walk_hair_r  ;
+		bmp[  6 ] = &p->nina_walk_neko    ;
+		bmp[  7 ] = &p->nina_walk_hair_s  ;
+		bmp[  8 ] = &p->nina_walk_hair_f  ;
+		bmp[  9 ] = &p->nina_jump_lgS_1   ;
+		bmp[ 10 ] = &p->nina_jump_leg_3   ;
+		bmp[ 11 ] = &p->nina_jump_arm_1   ;
+		bmp[ 12 ] = &p->nina_stub_sleeve_r;
+		bmp[ 13 ] = NULL;
+
+		n_sprite_set( s, i, bmp, ox, oy, snd, interval );
+
+		i++;
+		if ( i >= max_frames ) { break; }
+	}
+
+	int n = 0;
+
+	i = 0;
+	n_posix_loop
+	{
+
+		n_sprite_single *obj = &s->obj[ i ];
 
 		if ( i == 0 )
 		{
-			int n = 0;
-			bmp[ n ] = &p->nina_stub_body    ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_stub_hip     ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_stub_boob    ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_head    ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_ear     ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_hair_r  ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_neko    ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_hair_s  ; ox[ n ] =  0; oy[ n ] =  0; n++; // Hair Side
-			bmp[ n ] = &p->nina_walk_hair_f  ; ox[ n ] =  0; oy[ n ] =  0; n++; // Hair 1
-			bmp[ n ] = &p->nina_jump_lgS_1   ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_jump_leg_3   ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_jump_arm_1   ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_stub_sleeve_r; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = NULL;
+			//
 		} else
 		if ( i == 1 )
 		{
-			int n = 0;
-			bmp[ n ] = &p->nina_stub_body    ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_stub_hip     ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_stub_boob    ; ox[ n ] =  0; oy[ n ] =  1; n++;
-			bmp[ n ] = &p->nina_walk_head    ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_ear     ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_hair_r  ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_neko    ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_hair_s  ; ox[ n ] =  0; oy[ n ] =  0; n++; // Hair Side
-			bmp[ n ] = &p->nina_walk_hair_f  ; ox[ n ] =  0; oy[ n ] =  0; n++; // Hair 2
-			bmp[ n ] = &p->nina_jump_leg_2   ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_jump_arm_1   ; ox[ n ] =  1; oy[ n ] =  1; n++;
-			bmp[ n ] = &p->nina_stub_sleeve_r; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = NULL;
+			n =  2; obj->ox[ n ] =  0; obj->oy[ n ] =  1; // nina_stub_boob
+			n =  5; obj->ox[ n ] =  0; obj->oy[ n ] =  1; // nina_walk_hair_r
+			n =  8; obj->ox[ n ] = -1; obj->oy[ n ] =  1; // nina_walk_hair_f
+			n = 11; obj->ox[ n ] =  1; obj->oy[ n ] =  1; // nina_jump_arm_1
+
+			obj->bmp[  9 ] = &p->nina_stub; // [!]: unused
+			obj->bmp[ 10 ] = &p->nina_jump_leg_2;
 		} else
 		if ( i == 2 )
 		{
-			int n = 0;
-			bmp[ n ] = &p->nina_stub_body    ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_stub_hip     ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_stub_boob    ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_head    ; ox[ n ] =  0; oy[ n ] =  1; n++;
-			bmp[ n ] = &p->nina_walk_ear     ; ox[ n ] =  0; oy[ n ] =  1; n++;
-			bmp[ n ] = &p->nina_walk_hair_r  ; ox[ n ] =  0; oy[ n ] =  1; n++;
-			bmp[ n ] = &p->nina_walk_neko    ; ox[ n ] =  0; oy[ n ] =  1; n++;
-			bmp[ n ] = &p->nina_walk_hair_s  ; ox[ n ] =  0; oy[ n ] =  1; n++; // Hair Side
-			bmp[ n ] = &p->nina_walk_hair_f  ; ox[ n ] =  0; oy[ n ] =  1; n++; // Hair 3
-			bmp[ n ] = &p->nina_jump_lgS_3   ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_jump_leg_1   ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_jump_arm_1   ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_stub_sleeve_r; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = NULL;
+			n =  2; obj->ox[ n ] =  0; obj->oy[ n ] =  2; // nina_stub_boob
+			n =  3; obj->ox[ n ] =  0; obj->oy[ n ] =  1; // nina_walk_head
+			n =  4; obj->ox[ n ] =  0; obj->oy[ n ] =  1; // nina_walk_ear
+			n =  5; obj->ox[ n ] = -1; obj->oy[ n ] =  2; // nina_walk_hair_r
+			n =  6; obj->ox[ n ] =  0; obj->oy[ n ] =  1; // nina_walk_neko
+			n =  7; obj->ox[ n ] =  0; obj->oy[ n ] =  1; // nina_walk_hair_s
+			n =  8; obj->ox[ n ] = -2; obj->oy[ n ] =  2; // nina_walk_hair_f
+			n = 11; obj->ox[ n ] =  1; obj->oy[ n ] =  1; // nina_jump_arm_1
+
+			obj->bmp[  9 ] = &p->nina_jump_lgS_3;
+			obj->bmp[ 10 ] = &p->nina_jump_leg_1;
 		} else
 		if ( i == 3 )
 		{
-			int n = 0;
-			bmp[ n ] = &p->nina_stub_body    ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_stub_hip     ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_stub_boob    ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_head    ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_ear     ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_hair_r  ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_neko    ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_hair_s  ; ox[ n ] =  0; oy[ n ] =  0; n++; // Hair Side
-			bmp[ n ] = &p->nina_walk_hair_f  ; ox[ n ] =  0; oy[ n ] =  0; n++; // Hair 2
-			bmp[ n ] = &p->nina_jump_leg_2   ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_jump_arm_1   ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_stub_sleeve_r; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = NULL;
-		} else {
-			break;
+			n =  2; obj->ox[ n ] =  0; obj->oy[ n ] =  1; // nina_stub_boob
+			n =  5; obj->ox[ n ] =  0; obj->oy[ n ] =  1; // nina_walk_hair_r
+			n =  8; obj->ox[ n ] = -1; obj->oy[ n ] =  1; // nina_walk_hair_f
+			n = 11; obj->ox[ n ] =  1; obj->oy[ n ] =  1; // nina_jump_arm_1
+
+			obj->bmp[  9 ] = &p->nina_stub; // [!]: unused
+			obj->bmp[ 10 ] = &p->nina_jump_leg_2;
 		}
 
-		n_sprite_set( &n_chara_sprite_jump, i, bmp, ox, oy, snd, interval );
-
 		i++;
+		if ( i >= max_frames ) { break; }
 	}
 
 
@@ -1794,7 +1784,7 @@ n_chara_jump_draw( n_nn2 *p )
 		{
 			if ( bmp == &p->nina_jump_arm_1 )
 			{
-				bmp = &p->nina_walk_arm_r_2;
+				bmp = &p->nina_walk_arm_f_2;
 			}
 		} else
 		if ( p->swim_onoff )
@@ -1882,43 +1872,53 @@ n_chara_jump_draw( n_nn2 *p )
 
 
 void
-n_chara_land_init( n_nn2 *p, int interval )
+n_chara_land_init( n_nn2 *p )
 {
 
-	n_sprite_zero( &n_chara_sprite_land );
-	
+	n_sprite *s = &n_chara_sprite_land;
+
+
+	const int max_frames = 1;
+
+
+	n_sprite_zero( s );
+
+	int ox[ N_SPRITE_MAX ]; n_memory_zero( ox, N_SPRITE_MAX * sizeof( int ) );
+	int oy[ N_SPRITE_MAX ]; n_memory_zero( oy, N_SPRITE_MAX * sizeof( int ) );
+
+
+	int interval = 3;
+
+
 	n_type_gfx hf = N_NN2_STEP_DUCK_HALF;
+
+	oy[ 0 ] = hf;
+	oy[ 1 ] = hf;
+	oy[ 2 ] = hf;
+	oy[ 4 ] = hf;
 
 	int i = 0;
 	n_posix_loop
 	{
 
 		n_bmp *bmp[ N_SPRITE_MAX ];
-		int     ox[ N_SPRITE_MAX ];
-		int     oy[ N_SPRITE_MAX ];
-		int    snd = 0;
 
-		if ( i == 0 )
-		{
-			int n = 0;
-			bmp[ n ] = &p->nina_stub_body           ; ox[ n ] =  0; oy[ n ] = hf; n++;
-			bmp[ n ] = &p->nina_stub_hip            ; ox[ n ] =  0; oy[ n ] = hf; n++;
-			bmp[ n ] = &p->nina_stub_boob           ; ox[ n ] =  0; oy[ n ] = hf; n++;
-			bmp[ n ] = &p->nina_duck_half_body      ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_stub_sleeve_m       ; ox[ n ] =  0; oy[ n ] = hf; n++;
-			bmp[ n ] = &p->nina_duck_half_head      ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_duck_half_hair_rear ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_duck_half_neko      ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_duck_half_hair_side ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_duck_half_hair_front; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = NULL;
-		} else {
-			break;
-		}
+		bmp[  0 ] = &p->nina_stub_body           ;
+		bmp[  1 ] = &p->nina_stub_hip            ;
+		bmp[  2 ] = &p->nina_stub_boob           ;
+		bmp[  3 ] = &p->nina_duck_half_body      ;
+		bmp[  4 ] = &p->nina_stub_sleeve_m       ;
+		bmp[  5 ] = &p->nina_duck_half_head      ;
+		bmp[  6 ] = &p->nina_duck_half_hair_rear ;
+		bmp[  7 ] = &p->nina_duck_half_neko      ;
+		bmp[  8 ] = &p->nina_duck_half_hair_side ;
+		bmp[  9 ] = &p->nina_duck_half_hair_front;
+		bmp[ 10 ] = NULL;
 
-		n_sprite_set( &n_chara_sprite_land, i, bmp, ox, oy, snd, interval );
+		n_sprite_set( s, i, bmp, ox, oy, 0, interval );
 
 		i++;
+		if ( i >= max_frames ) { break; }
 	}
 
 	return;
@@ -1968,47 +1968,52 @@ n_chara_land_draw( n_nn2 *p )
 
 
 void
-n_chara_land_swim_init( n_nn2 *p, int interval )
+n_chara_land_swim_init( n_nn2 *p )
 {
 
-	n_sprite_zero( &n_chara_sprite_land_swim );
+	n_sprite *s = &n_chara_sprite_land_swim;
+
+
+	const int max_frames = 1;
+
+
+	n_sprite_zero( s );
+
+	int ox[ N_SPRITE_MAX ]; n_memory_zero( ox, N_SPRITE_MAX * sizeof( int ) );
+	int oy[ N_SPRITE_MAX ]; n_memory_zero( oy, N_SPRITE_MAX * sizeof( int ) );
+
+
+	int interval = 3;
+
 
 	int i = 0;
 	n_posix_loop
 	{
 
 		n_bmp *bmp[ N_SPRITE_MAX ];
-		int     ox[ N_SPRITE_MAX ];
-		int     oy[ N_SPRITE_MAX ];
 		int    snd = 0;
 
-		if ( i == 0 )
-		{
-			int n = 0;
-			bmp[ n ] = &p->nina_stub_body    ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_stub_hip     ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_stub_boob    ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_head    ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_ear     ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_hair_r  ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_neko    ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_hair_s  ; ox[ n ] =  0; oy[ n ] =  0; n++; // Hair Side
-			bmp[ n ] = &p->nina_walk_hair_f  ; ox[ n ] =  0; oy[ n ] =  0; n++; // Hair 1
-			bmp[ n ] = &p->nina_jump_lgS_1   ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_leg_n   ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_jump_arm_2   ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_stub_sleeve_r; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = NULL;
-		} else
-		//
-		{
-			break;
-		}
+		bmp[  0 ] = &p->nina_stub_body    ;
+		bmp[  1 ] = &p->nina_stub_hip     ;
+		bmp[  2 ] = &p->nina_stub_boob    ;
+		bmp[  3 ] = &p->nina_walk_head    ;
+		bmp[  4 ] = &p->nina_walk_ear     ;
+		bmp[  5 ] = &p->nina_walk_hair_r  ;
+		bmp[  6 ] = &p->nina_walk_neko    ;
+		bmp[  7 ] = &p->nina_walk_hair_s  ;
+		bmp[  8 ] = &p->nina_walk_hair_f  ;
+		bmp[  9 ] = &p->nina_jump_lgS_1   ;
+		bmp[ 10 ] = &p->nina_walk_leg_n   ;
+		bmp[ 11 ] = &p->nina_jump_arm_2   ;
+		bmp[ 12 ] = &p->nina_stub_sleeve_r;
+		bmp[ 13 ] = NULL;
 
-		n_sprite_set( &n_chara_sprite_land_swim, i, bmp, ox, oy, snd, interval );
+		n_sprite_set( s, i, bmp, ox, oy, snd, interval );
 
 		i++;
+		if ( i >= max_frames ) { break; }
 	}
+
 
 	return;
 }
@@ -2052,44 +2057,50 @@ n_chara_land_swim_draw( n_nn2 *p )
 
 
 void
-n_chara_suck_init( n_nn2 *p, int interval )
+n_chara_suck_init( n_nn2 *p )
 {
 
-	n_sprite_zero( &n_chara_sprite_suck );
+	n_sprite *s = &n_chara_sprite_suck;
+
+
+	const int max_frames = 1;
+
+
+	n_sprite_zero( s );
+
+	int ox[ N_SPRITE_MAX ]; n_memory_zero( ox, N_SPRITE_MAX * sizeof( int ) );
+	int oy[ N_SPRITE_MAX ]; n_memory_zero( oy, N_SPRITE_MAX * sizeof( int ) );
+
+
+	int interval = 5;
+
 
 	int i = 0;
 	n_posix_loop
 	{
 
 		n_bmp *bmp[ N_SPRITE_MAX ];
-		int     ox[ N_SPRITE_MAX ];
-		int     oy[ N_SPRITE_MAX ];
-		int    snd = 0;
 
-		if ( i == 0 )
-		{
-			int n = 0;
-			bmp[ n ] = &p->nina_stub_body    ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_stub_hip     ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_stub_boob    ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_head    ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_ear     ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_hair_r  ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_neko    ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_walk_hair_s  ; ox[ n ] =  0; oy[ n ] =  0; n++; // Hair Side
-			bmp[ n ] = &p->nina_walk_hair_f  ; ox[ n ] =  0; oy[ n ] =  0; n++; // Hair 1
-			bmp[ n ] = &p->nina_suck_arm_1   ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_stub_sleeve_r; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = &p->nina_suck_leg_1   ; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = NULL;
-		} else {
-			break;
-		}
+		bmp[  0 ] = &p->nina_stub_body    ;
+		bmp[  1 ] = &p->nina_stub_hip     ;
+		bmp[  2 ] = &p->nina_stub_boob    ;
+		bmp[  3 ] = &p->nina_walk_head    ;
+		bmp[  4 ] = &p->nina_walk_ear     ;
+		bmp[  5 ] = &p->nina_walk_hair_r  ;
+		bmp[  6 ] = &p->nina_walk_neko    ;
+		bmp[  7 ] = &p->nina_walk_hair_s  ;
+		bmp[  8 ] = &p->nina_walk_hair_f  ;
+		bmp[  9 ] = &p->nina_suck_arm_1   ;
+		bmp[ 10 ] = &p->nina_stub_sleeve_r;
+		bmp[ 11 ] = &p->nina_suck_leg_1   ;
+		bmp[ 12 ] = NULL;
 
-		n_sprite_set( &n_chara_sprite_suck, i, bmp, ox, oy, snd, interval );
+		n_sprite_set( s, i, bmp, ox, oy, 0, interval );
 
 		i++;
+		if ( i >= max_frames ) { break; }
 	}
+
 
 	return;
 }
@@ -2152,33 +2163,40 @@ n_chara_suck_draw( n_nn2 *p )
 
 
 void
-n_chara_turn_init( n_nn2 *p, int interval )
+n_chara_turn_init( n_nn2 *p )
 {
 
-	n_sprite_zero( &n_chara_sprite_turn );
+	n_sprite *s = &n_chara_sprite_turn;
+
+
+	const int max_frames = 1;
+
+
+	n_sprite_zero( s );
+
+	int ox[ N_SPRITE_MAX ]; n_memory_zero( ox, N_SPRITE_MAX * sizeof( int ) );
+	int oy[ N_SPRITE_MAX ]; n_memory_zero( oy, N_SPRITE_MAX * sizeof( int ) );
+
+
+	int interval = 3;
+
 
 	int i = 0;
 	n_posix_loop
 	{
 
 		n_bmp *bmp[ N_SPRITE_MAX ];
-		int     ox[ N_SPRITE_MAX ];
-		int     oy[ N_SPRITE_MAX ];
 		int    snd = 0;
 
-		if ( i == 0 )
-		{
-			int n = 0;
-			bmp[ n ] = &p->nina_stub_turn; ox[ n ] =  0; oy[ n ] =  0; n++;
-			bmp[ n ] = NULL;
-		} else {
-			break;
-		}
+		bmp[ 0 ] = &p->nina_stub_turn;
+		bmp[ 1 ] = NULL;
 
-		n_sprite_set( &n_chara_sprite_turn, i, bmp, ox, oy, snd, interval );
+		n_sprite_set( s, i, bmp, ox, oy, snd, interval );
 
 		i++;
+		if ( i >= max_frames ) { break; }
 	}
+
 
 	return;
 }

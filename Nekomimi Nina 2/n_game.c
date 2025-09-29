@@ -42,6 +42,19 @@
 #include "../nonnon/mac/gamepad.c"
 
 
+#include "../nonnon/neutral/time.c"
+#include "../nonnon/neutral/bmp/ui/rectframe.c"
+#include "../nonnon/neutral/bmp/ui/roundframe.c"
+
+
+#include "../nonnon/game/helper.c"
+#include "../nonnon/game/progressbar.c"
+#include "../nonnon/game/transition.c"
+
+
+#include "../nonnon/win32/gdi.c"
+
+
 
 
 @interface NonnonGame : NSView
@@ -257,6 +270,9 @@ n_nn2_game_timer( n_type_timer *prv, n_type_real interval )
 
 
 	n_nn2 *p = &nn2;
+	//n_mac_image_imagerep_alias( p->rep, &p->canvas_main );
+	//N_BMP_PTR( &p->canvas_main ) = (void*) [p->rep bitmapData];
+
 
 //NSLog( @"%d", p->title_phase );
 
@@ -475,6 +491,8 @@ n_nn2_game_timer( n_type_timer *prv, n_type_real interval )
 {
 
 	n_nn2 *p = &nn2;
+	//n_mac_image_imagerep_alias( p->rep, &p->canvas_main );
+	//N_BMP_PTR( &p->canvas_main ) = (void*) [p->rep bitmapData];
 
 
 	static n_type_timer timer_frame = 0;
@@ -517,7 +535,16 @@ n_nn2_game_timer( n_type_timer *prv, n_type_real interval )
 
 //n_mac_draw_box( [NSColor blackColor], n_rect );
 
-	n_mac_image_nbmp_direct_draw_fast( nn2.canvas, &n_rect, n_posix_false );
+	n_nn2 *p = &nn2;
+
+	//n_mac_image_nbmp_direct_draw_fast( p->canvas, &n_rect, n_posix_false );
+
+	//n_mac_image_imagerep_sync( p->rep, p->canvas );
+
+	// [Needed] : set every time
+	n_mac_image_imagerep_alias_fast( p->rep, &p->canvas_main );
+
+	n_mac_image_nbmp_direct_draw_faster( p->rep, &n_rect, n_posix_false );
 
 }
 

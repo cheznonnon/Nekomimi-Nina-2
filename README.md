@@ -1,5 +1,5 @@
 
-2025.08.28
+2025.09.30
 
 you can use Xcode to build.
 
@@ -10,3 +10,8 @@ use "GitHub Desktop".
 
 feel free to report or to complain<br>
 https://github.com/cheznonnon/Forum/discussions
+
+[ Screenshot ]
+
+![screenshot](https://cheznonnon.github.io/Nonnon_for_Mac/Screenshot/Nekomimi%20Nina%202.png)
+![screenshot](https://cheznonnon.github.io/Nonnon_for_Mac/Screenshot/Nekomimi%20Nina%202_play.png)

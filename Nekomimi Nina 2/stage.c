@@ -211,7 +211,7 @@ n_nn2_stage_transition( n_nn2 *p, n_nn2_stage *from, n_nn2_stage *to )
 		extern void n_nn2_loop_minimal( n_nn2 *p );
 		extern void n_nn2_draw( n_nn2 *p );
 
-		n_bmp_flush( &p->canvas_main, n_bmp_black );
+		n_bmp_flush( &p->canvas_base, n_bmp_black );
 
 
 		p->stage  = from;
