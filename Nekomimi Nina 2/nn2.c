@@ -570,8 +570,9 @@ typedef struct {
 	BOOL        redraw_onoff;
 	BOOL        game_onoff;
 
-	CGFloat     interval_frame;
-	CGFloat     interval_display;
+	u32          interval_loop;
+	u32          interval_frame;
+	u32          interval_display;
 
 	NSWindow   *window;
 	NSWindow   *sheet;

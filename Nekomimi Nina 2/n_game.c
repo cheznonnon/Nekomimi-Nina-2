@@ -91,33 +91,6 @@ static NonnonGame *n_nn2_global = NULL;
 
 
 
-
-
-
-#define n_type_timer n_type_real
-
-n_posix_inline n_posix_bool
-n_nn2_game_timer( n_type_timer *prv, n_type_real interval )
-{
-
-	n_type_timer  cur = CACurrentMediaTime() * 1000;
-	n_type_timer msec = cur - (*prv);
-
-
-	if ( msec >= interval )
-	{
-		(*prv) = cur;
-
-		return n_posix_true;
-	}
-
-
-	return n_posix_false;
-}
-
-
-
-
 @interface NonnonGame ()
 
 @end
@@ -183,8 +156,9 @@ n_nn2_game_timer( n_type_timer *prv, n_type_real interval )
 
 	n_nn2 *p = &nn2;
 
-	p->interval_frame   = 1000 / 30;
-	p->interval_display = 1000 / 60;
+	p->interval_loop    = ( 1000.0 / 60.0 );
+	p->interval_frame   = ( 1000.0 / 30.0 );
+	p->interval_display = ( 1000.0 / 60.0 );
 
 	// [x] : Sonoma : glitch prevention
 	n_mac_timer_init_once( self, @selector( n_timer_method_launch ), 500 );
@@ -465,8 +439,8 @@ n_nn2_game_timer( n_type_timer *prv, n_type_real interval )
 	}
 
 
-	static CGFloat timer = 0;
-	if ( n_nn2_game_timer( &timer, 12 ) )
+	static u32 timer = 0;
+	if ( n_game_timer( &timer, p->interval_loop ) )
 	{
 #ifdef DEBUG
 		if ( p->debug_pause ) { return; }
@@ -495,8 +469,8 @@ n_nn2_game_timer( n_type_timer *prv, n_type_real interval )
 	//N_BMP_PTR( &p->canvas_main ) = (void*) [p->rep bitmapData];
 
 
-	static n_type_timer timer_frame = 0;
-	if ( n_nn2_game_timer( &timer_frame, p->interval_frame ) )
+	static u32 timer_frame = 0;
+	if ( n_game_timer( &timer_frame, p->interval_frame ) )
 	{
 		n_sprite_animation( p->sprite_cur );
 		n_chip_animation( p );
@@ -513,8 +487,8 @@ n_nn2_game_timer( n_type_timer *prv, n_type_real interval )
 	if ( p->costume_transition ) { return; }
 
 
-	static n_type_timer timer = 0;
-	if ( n_nn2_game_timer( &timer, p->interval_display ) )
+	static u32 timer = 0;
+	if ( n_game_timer( &timer, p->interval_display ) )
 	{
 		if ( p->redraw_onoff )
 		{
