@@ -518,7 +518,7 @@ n_posix_tickcount( void )
 	// [x] : run on Win95 but slow
 
 	LARGE_INTEGER li_frq; QueryPerformanceFrequency( &li_frq );
-        LARGE_INTEGER li_now; QueryPerformanceCounter  ( &li_now );
+	LARGE_INTEGER li_now; QueryPerformanceCounter  ( &li_now );
 
 	ret = (u32) ( ( 1000LL * li_now.QuadPart ) / li_frq.QuadPart );
 */
@@ -1769,6 +1769,33 @@ n_posix_crc32( u8 *data, u32 len )
 
 
 	return crc ^ 0xffffffffL;
+}
+
+int
+n_posix_math_gcd( int a, int b )
+{
+
+	// Greatest Common Divisor
+
+	while( b != 0 )
+	{
+		int temp = b;
+		       b = a % b;
+		       a = temp;
+	}
+
+	return a;
+}
+
+int
+n_posix_math_lcm( int a, int b )
+{
+
+	// Least Common Multiple
+
+	if ( ( a == 0 )||( b == 0 ) ) { return 0; }
+
+	return abs( a / n_posix_math_gcd( a, b ) * b );
 }
 
 
