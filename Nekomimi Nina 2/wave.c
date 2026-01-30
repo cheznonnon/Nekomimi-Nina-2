@@ -195,12 +195,12 @@ n_nn2_wave_bubble_draw( n_nn2 *p )
 				n_type_gfx x = b->x - p->stage->camera_x;
 				n_type_gfx y = b->y - p->stage->camera_y;
 				n_bmp_hoop( p->canvas, x, y, b->sx, b->sy, 1, n_bmp_white );
-				b->x += 8 - n_game_random( 16 );
+				b->x += 8 - n_random_range( 16 );
 			}
 		} else
-		if ( n_game_timer( &p->bubble_timer, 1000 ) )
+		if ( n_bmp_ui_timer( &p->bubble_timer, 1000 ) )
 		{
-			//n_type_gfx r = n_game_random( 16 );
+			//n_type_gfx r = n_random_range( 16 );
 
 			b->onoff = TRUE;
 			b->x     = p->stage->nina_x + ( p->nina_sx / 2 );

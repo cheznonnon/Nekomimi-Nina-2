@@ -30,29 +30,7 @@
 
 
 
-#import <Cocoa/Cocoa.h>
-
-
-#include "../nonnon/mac/_mac.c"
-#include "../nonnon/mac/draw.c"
-#include "../nonnon/mac/image.c"
-#include "../nonnon/mac/sound.c"
-#include "../nonnon/mac/window.c"
-
-#include "../nonnon/mac/gamepad.c"
-
-
-#include "../nonnon/neutral/time.c"
-#include "../nonnon/neutral/bmp/ui/rectframe.c"
-#include "../nonnon/neutral/bmp/ui/roundframe.c"
-
-
-#include "../nonnon/game/helper.c"
-#include "../nonnon/game/progressbar.c"
-#include "../nonnon/game/transition.c"
-
-
-#include "../nonnon/win32/gdi.c"
+#include "extern.h"
 
 
 
@@ -87,33 +65,6 @@ static NonnonGame *n_nn2_global = NULL;
 
 #include "./input.c"
 #include "./title.c"
-
-
-
-
-
-
-
-#define n_type_timer n_type_real
-
-n_posix_inline n_posix_bool
-n_nn2_game_timer( n_type_timer *prv, n_type_real interval )
-{
-
-	n_type_timer  cur = CACurrentMediaTime() * 1000;
-	n_type_timer msec = cur - (*prv);
-
-
-	if ( msec >= interval )
-	{
-		(*prv) = cur;
-
-		return n_posix_true;
-	}
-
-
-	return n_posix_false;
-}
 
 
 
@@ -183,8 +134,9 @@ n_nn2_game_timer( n_type_timer *prv, n_type_real interval )
 
 	n_nn2 *p = &nn2;
 
-	p->interval_frame   = 1000 / 30;
-	p->interval_display = 1000 / 60;
+	p->interval_loop    = ( 1000.0 / 60.0 );
+	p->interval_frame   = ( 1000.0 / 30.0 );
+	p->interval_display = ( 1000.0 / 60.0 );
 
 	// [x] : Sonoma : glitch prevention
 	n_mac_timer_init_once( self, @selector( n_timer_method_launch ), 500 );
@@ -320,14 +272,14 @@ n_nn2_game_timer( n_type_timer *prv, n_type_real interval )
 	if ( p->weather_transition )
 	{
 		static BOOL ret = FALSE;
-		ret = n_game_transition
+		ret = n_bmp_ui_transition
 		(
 			 p->canvas,
 			&p->transition_bmp_old,
 			&p->transition_bmp_new,
 			 1000,
 			&p->transition_percent,
-			 N_GAME_TRANSITION_MOSAIC
+			 N_BMP_UI_TRANSITION_MOSAIC
 		);
 		if ( ret )
 		{
@@ -345,14 +297,14 @@ n_nn2_game_timer( n_type_timer *prv, n_type_real interval )
 
 	if ( p->costume_transition == 1 )
 	{
-		BOOL ret = n_game_transition
+		BOOL ret = n_bmp_ui_transition
 		(
 			 p->canvas,
 			&p->transition_bmp_old,
 			&p->transition_bmp_mid,
 			 1000,
 			&p->transition_percent,
-			 N_GAME_TRANSITION_CIRCLE
+			 N_BMP_UI_TRANSITION_CIRCLE
 		);
 		if ( ret )
 		{
@@ -365,14 +317,14 @@ n_nn2_game_timer( n_type_timer *prv, n_type_real interval )
 	} else
 	if ( p->costume_transition == 2 )
 	{
-		BOOL ret = n_game_transition
+		BOOL ret = n_bmp_ui_transition
 		(
 			 p->canvas,
 			&p->transition_bmp_mid,
 			&p->transition_bmp_new,
 			 1000,
 			&p->transition_percent,
-			 N_GAME_TRANSITION_CIRCLE
+			 N_BMP_UI_TRANSITION_CIRCLE
 		);
 		if ( ret )
 		{
@@ -393,7 +345,7 @@ n_nn2_game_timer( n_type_timer *prv, n_type_real interval )
 
 	if ( p->transition_phase == 1 )
 	{
-		BOOL ret = n_game_transition
+		BOOL ret = n_bmp_ui_transition
 		(
 			 p->canvas,
 			&p->transition_bmp_old,
@@ -421,7 +373,7 @@ n_nn2_game_timer( n_type_timer *prv, n_type_real interval )
 	} else
 	if ( p->transition_phase == 2 )
 	{
-		BOOL ret = n_game_transition
+		BOOL ret = n_bmp_ui_transition
 		(
 			 p->canvas,
 			&p->transition_bmp_mid,
@@ -452,7 +404,7 @@ n_nn2_game_timer( n_type_timer *prv, n_type_real interval )
 
 			p->hipdrop_state = 0;
 
-			p->dokan_stage_number_shuffle = 2 + n_game_random( 4 );
+			p->dokan_stage_number_shuffle = 2 + n_random_range( 4 );
 
 			p->timeup = n_posix_tickcount() + N_NN2_STAGE_7_TIMEUP;
 
@@ -465,8 +417,8 @@ n_nn2_game_timer( n_type_timer *prv, n_type_real interval )
 	}
 
 
-	static CGFloat timer = 0;
-	if ( n_nn2_game_timer( &timer, 12 ) )
+	static u32 timer = 0;
+	if ( n_bmp_ui_timer( &timer, p->interval_loop ) )
 	{
 #ifdef DEBUG
 		if ( p->debug_pause ) { return; }
@@ -495,8 +447,8 @@ n_nn2_game_timer( n_type_timer *prv, n_type_real interval )
 	//N_BMP_PTR( &p->canvas_main ) = (void*) [p->rep bitmapData];
 
 
-	static n_type_timer timer_frame = 0;
-	if ( n_nn2_game_timer( &timer_frame, p->interval_frame ) )
+	static u32 timer_frame = 0;
+	if ( n_bmp_ui_timer( &timer_frame, p->interval_frame ) )
 	{
 		n_sprite_animation( p->sprite_cur );
 		n_chip_animation( p );
@@ -513,8 +465,8 @@ n_nn2_game_timer( n_type_timer *prv, n_type_real interval )
 	if ( p->costume_transition ) { return; }
 
 
-	static n_type_timer timer = 0;
-	if ( n_nn2_game_timer( &timer, p->interval_display ) )
+	static u32 timer = 0;
+	if ( n_bmp_ui_timer( &timer, p->interval_display ) )
 	{
 		if ( p->redraw_onoff )
 		{
@@ -537,14 +489,14 @@ n_nn2_game_timer( n_type_timer *prv, n_type_real interval )
 
 	n_nn2 *p = &nn2;
 
-	//n_mac_image_nbmp_direct_draw_fast( p->canvas, &n_rect, n_posix_false );
+	//n_mac_image_nbmp_direct_draw_fast( p->canvas, &n_rect, FALSE );
 
 	//n_mac_image_imagerep_sync( p->rep, p->canvas );
 
 	// [Needed] : set every time
 	n_mac_image_imagerep_alias_fast( p->rep, &p->canvas_main );
 
-	n_mac_image_nbmp_direct_draw_faster( p->rep, &n_rect, n_posix_false );
+	n_mac_image_nbmp_direct_draw_faster( p->rep, &n_rect, FALSE );
 
 }
 

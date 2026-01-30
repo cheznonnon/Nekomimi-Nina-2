@@ -68,7 +68,7 @@ n_object_kirakira_init_single( n_nn2 *p, n_sprite *s )
 
 		if ( i == 0 )
 		{
-			interval = n_game_random( 100 );
+			interval = n_random_range( 100 );
 
 			int n = 0;
 			bmp[ n ] = &p->kirakira_bmp_n; ox[ n ] = 0; oy[ n ] = 0; n++;
@@ -117,13 +117,13 @@ n_object_kirakira_reset( n_nn2 *p, n_nn2_stage *st )
 
 		n_sprite *s = &p->kirakira[ i ];
 
-		s->x = n_game_random( st->map_sx );
-		s->y = n_game_random( st->map_sy );
+		s->x = n_random_range( st->map_sx );
+		s->y = n_random_range( st->map_sy );
 
 		s->sx = N_BMP_SX( s->obj[ 0 ].bmp[ 0 ] );
 		s->sy = N_BMP_SY( s->obj[ 0 ].bmp[ 0 ] );
 
-		s->frame = n_game_random( 4 );
+		s->frame = n_random_range( 4 );
 
 		i++;
 		if ( i >= N_OBJECT_KIRAKIRA_MAX ) { break; }
@@ -218,8 +218,8 @@ n_object_kirakira_draw( n_nn2 *p )
 	n_type_gfx slice = count / cores;
 
 
-	n_posix_bool prv = n_bmp_is_multithread;
-	n_bmp_is_multithread = n_posix_true;
+	BOOL prv = n_bmp_is_multithread;
+	n_bmp_is_multithread = TRUE;
 
 //n_bmp_box( p->canvas, 400, 400, 50, 50, n_bmp_rgb_mac( 0,200,255 ) );
 

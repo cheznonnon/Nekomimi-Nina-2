@@ -88,8 +88,8 @@ n_object_bell_map_init( n_nn2 *p, n_nn2_stage *s )
 		int i = 0;
 		n_posix_loop
 		{
-			int f = n_game_random( count );
-			int t = n_game_random( count );
+			int f = n_random_range( count );
+			int t = n_random_range( count );
 
 			n_object_bell_map m        = map[ f ];
 			                  map[ f ] = map[ t ];
@@ -497,7 +497,7 @@ n_object_bell_condition_draw( n_nn2 *p )
 	if ( disappear_animation )
 	{
 		static u32 timer = 0;
-		if ( n_game_timer( &timer, 33 ) )
+		if ( n_bmp_ui_timer( &timer, 33 ) )
 		{
 			blend += 0.1;
 			if ( blend >= 1.0 )

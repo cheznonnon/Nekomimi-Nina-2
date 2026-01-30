@@ -169,7 +169,7 @@ n_object_birds_init( n_nn2 *p, n_sprite *s )
 	s->margin_sy = 12 / p->zoom;
 
 
-	if ( 0 == n_game_random( 2 ) )
+	if ( 0 == n_random_range( 2 ) )
 	{
 		s->direction  = N_NN2_DIRECTION_LEFT;
 	} else {
@@ -177,7 +177,7 @@ n_object_birds_init( n_nn2 *p, n_sprite *s )
 	}
 
 
-	s->wink_count = n_game_random( N_OBJECT_BIRDS_WINK_MAX );
+	s->wink_count = n_random_range( N_OBJECT_BIRDS_WINK_MAX );
 
 
 	return;
@@ -309,7 +309,7 @@ n_object_birds_action( n_nn2 *p, n_sprite *s )
 	{
 		s->y += 4;
 	} else {
-		s->y += 1 - n_game_random( 3 );
+		s->y += 1 - n_random_range( 3 );
 	}
 
 

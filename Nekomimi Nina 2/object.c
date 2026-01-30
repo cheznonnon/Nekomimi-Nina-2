@@ -1096,7 +1096,7 @@ void
 n_object_fish_move( n_nn2 *p, n_sprite *s )
 {
 
-	if ( n_game_timer( &s->fish_timer, n_game_random( 100 ) ) )
+	if ( n_bmp_ui_timer( &s->fish_timer, n_random_range( 100 ) ) )
 	{
 		if ( s->fish_phase == 0 )
 		{

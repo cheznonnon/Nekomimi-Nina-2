@@ -258,7 +258,7 @@ n_object_kuina_action( n_nn2 *p, n_sprite *s )
 		static int i = 0;
 		if ( ( i % 3 ) == 2 )
 		{
-			s->jump_max = n_game_random( N_OBJ_JUMP_MAX / 2 );
+			s->jump_max = n_random_range( N_OBJ_JUMP_MAX / 2 );
 		} else {
 			s->jump_max = N_OBJ_JUMP_MAX / 4;
 		}

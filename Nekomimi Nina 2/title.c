@@ -239,7 +239,7 @@ n_nn2_title_go( n_nn2 *p )
 		}
 
 
-		if ( n_game_timer( &pop_timer, 27 ) )
+		if ( n_bmp_ui_timer( &pop_timer, 27 ) )
 		{
 			static int scan = 0;
 
@@ -280,14 +280,14 @@ n_nn2_title_go( n_nn2 *p )
 			} else
 			if ( phase == 0 )
 			{
-				if ( n_game_timer( &timer, 2222 ) )
+				if ( n_bmp_ui_timer( &timer, 2222 ) )
 				{
 					phase = 1;
 				}
 			} else
 			if ( phase == 1 )
 			{
-				if ( n_game_timer( &timer, 20 ) )
+				if ( n_bmp_ui_timer( &timer, 20 ) )
 				{
 					blend += 0.015;
 					if ( blend > 0.25 )
@@ -304,7 +304,7 @@ n_nn2_title_go( n_nn2 *p )
 			} else
 			if ( phase == 2 )
 			{
-				if ( n_game_timer( &timer, 20 ) )
+				if ( n_bmp_ui_timer( &timer, 20 ) )
 				{
 					blend -= 0.015;
 					if ( blend < 0.00 ) { blend = 0.00; phase = 0; }

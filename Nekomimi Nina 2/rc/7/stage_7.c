@@ -19,8 +19,8 @@ n_nn2_stage_7_timeup_ui( n_nn2 *p )
 	n_type_gfx sx = p->sx - ( size * 2 );
 	n_type_gfx sy = size;
 
-	n_game_progressbar_animation          = N_GAME_PROGRESSBAR_ANIMATION_ON_DOWN;
-	n_game_progressbar_animation_interval = 20;
+	n_bmp_ui_progressbar_animation          = N_BMP_UI_PROGRESSBAR_ANIMATION_ON_DOWN;
+	n_bmp_ui_progressbar_animation_interval = 20;
 
 	CGFloat r;
 	CGFloat d = p->timeup - n_posix_tickcount();
@@ -44,7 +44,7 @@ n_nn2_stage_7_timeup_ui( n_nn2 *p )
 
 	p->chip_blend = p->dokan_blend = 1.0 - sqrt( r );
 
-	n_game_progressbar_horz( p->canvas, x,y,sx,sy, fg,bg, r * 100, size * 2 );
+	n_bmp_ui_progressbar_horz( p->canvas, x,y,sx,sy, fg,bg, r * 100, size * 2 );
 
 
 	return;

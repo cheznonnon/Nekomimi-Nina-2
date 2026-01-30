@@ -9,7 +9,7 @@ void
 n_nn2_debug_bmp_save( n_nn2 *p, n_bmp *bmp )
 {
 
-	n_posix_bool prv = n_bmp_flip_onoff; n_bmp_flip_onoff = n_posix_false;
+	BOOL prv = n_bmp_flip_onoff; n_bmp_flip_onoff = FALSE;
 
 
 	n_bmp b; n_bmp_carboncopy( bmp, &b );

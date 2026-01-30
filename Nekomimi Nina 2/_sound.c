@@ -159,7 +159,7 @@ n_nn2_sound_rc_init( void )
 		n_posix_loop
 		{
 			n_nn2_sound_dokan[ i ] = n_nn2_sound_init( @"rc/sound/dokan", @"wav" );
-			[n_nn2_sound_dokan[ i ] setVolume:0.8];
+			//[n_nn2_sound_dokan[ i ] setVolume:0.8];
 
 			i++;
 			if ( i >= N_NN2_SOUND_DOKAN_COUNT ) { break; }

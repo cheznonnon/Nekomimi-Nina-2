@@ -738,8 +738,8 @@ n_nn2_sand_maker( n_nn2 *p, n_nn2_stage *s )
 	int i = 0;
 	n_posix_loop
 	{
-		n_type_gfx x = n_game_random( u );
-		n_type_gfx y = n_game_random( u );
+		n_type_gfx x = n_random_range( u );
+		n_type_gfx y = n_random_range( u );
 
 		n_bmp_ptr_set( &bmp, x,y, n_bmp_black );
 

@@ -86,8 +86,8 @@ n_chara_bmp_copy_all( n_nn2 *p, n_bmp *f, n_bmp *t, n_type_gfx ox, n_type_gfx oy
 	oy -= p->stage->camera_oy;
 
 
-	n_posix_bool prv = n_bmp_is_multithread;
-	n_bmp_is_multithread = n_posix_true;
+	BOOL prv = n_bmp_is_multithread;
+	n_bmp_is_multithread = TRUE;
 
 	int i = 0;
 	n_posix_loop
@@ -107,9 +107,9 @@ n_chara_bmp_copy_all( n_nn2 *p, n_bmp *f, n_bmp *t, n_type_gfx ox, n_type_gfx oy
 			n_type_gfx fy = i;
 			int tx = 0;
 
-			for (;;)
+			n_posix_loop
 			{
-				n_posix_bool write_needed = n_posix_false;
+				BOOL write_needed = FALSE;
 
 				/* check source and destination pixel accessibility once per pixel */
 				if ( ( n_bmp_ptr_is_accessible( lf, fx, fy ) ) && ( n_bmp_ptr_is_accessible( lt, ox + tx, oy + fy ) ) )
@@ -117,10 +117,10 @@ n_chara_bmp_copy_all( n_nn2 *p, n_bmp *f, n_bmp *t, n_type_gfx ox, n_type_gfx oy
 					u32 color = n_bmp_composite_pixel_fast(
 						lf, lt,
 						fx, fy, ox + tx, oy + fy,
-						n_posix_false,
-						n_posix_false,
-						n_posix_true,
-						n_posix_false,
+						FALSE,
+						FALSE,
+						TRUE,
+						FALSE,
 						local_blend,
 						&write_needed
 					);
@@ -286,7 +286,7 @@ n_chara_get_once( n_nn2 *p )
 		if ( NULL == p->sprite_cur->obj[ p->sprite_cur->index ].bmp[ 0 ] )
 		{
 			p->sprite_cur->index--;
-			p->sprite_cur->once = n_posix_true;
+			p->sprite_cur->once = TRUE;
 		}
 	}
 
@@ -319,9 +319,9 @@ n_chara_wink_init( n_nn2 *p )
 
 	if ( p->wink == 0 ) 
 	{
-		if ( p->wink_timer == 0 ) { n_game_timer( &p->wink_timer, 0 ); }
+		if ( p->wink_timer == 0 ) { n_bmp_ui_timer( &p->wink_timer, 0 ); }
 
-		p->wink       = n_game_timer( &p->wink_timer, 2000 );
+		p->wink       = n_bmp_ui_timer( &p->wink_timer, 2000 );
 		p->wink_frame = 0;
 	}
 
@@ -2268,7 +2268,7 @@ n_chara_action_dash( n_nn2 *p )
 		// [!] : Walk/Dash speed reducer
 
 		static u32 timer = 0;
-		if ( n_game_timer( &timer, 100 ) )
+		if ( n_bmp_ui_timer( &timer, 100 ) )
 		{
 			if ( p->nina_walk_step > N_NN2_STEP_INIT )
 			{
@@ -2285,7 +2285,7 @@ n_chara_action_dash( n_nn2 *p )
 	{
 		p->dash_value++;
 
-		if ( n_game_timer( &p->dash_timer, p->powerup->dash_interval ) )
+		if ( n_bmp_ui_timer( &p->dash_timer, p->powerup->dash_interval ) )
 		{
 			if ( p->nina_walk_step < N_NN2_STEP_DASH )
 			{
@@ -2327,11 +2327,11 @@ n_chara_action_move( n_nn2 *p, int direction, BOOL is_dash )
 
 	} else {
 
-		if ( n_game_timer( &p->dash_timer, p->powerup->walk_interval / p->nina_walk_step ) )
+		if ( n_bmp_ui_timer( &p->dash_timer, p->powerup->walk_interval / p->nina_walk_step ) )
 		{
 
 			static u32 axl_timer = 0;
-			if ( n_game_timer( &axl_timer, 500 ) )
+			if ( n_bmp_ui_timer( &axl_timer, 500 ) )
 			{
 				if ( p->nina_walk_step < N_NN2_STEP_WALK )
 				{

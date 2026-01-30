@@ -164,8 +164,8 @@ n_nn2_bgcloud_reset( n_nn2 *p, n_nn2_stage *stg )
 	int j = 0;
 	n_posix_loop
 	{
-		int r1 = n_game_random( N_NN2_BGCLOUD_MAX );
-		int r2 = n_game_random( N_NN2_BGCLOUD_MAX );
+		int r1 = n_random_range( N_NN2_BGCLOUD_MAX );
+		int r2 = n_random_range( N_NN2_BGCLOUD_MAX );
 
 		int   temp = step[ r1 ];
 		step[ r1 ] = step[ r2 ];
@@ -195,7 +195,7 @@ n_nn2_bgcloud_reset( n_nn2 *p, n_nn2_stage *stg )
 	int i = 0;
 	n_posix_loop
 	{
-		stg->bgcloud_sprite[ i ].x = n_game_random( stg->map_sx );
+		stg->bgcloud_sprite[ i ].x = n_random_range( stg->map_sx );
 		stg->bgcloud_sprite[ i ].y = stg->map_sy / 10 * ( i + 1 );
 
 		if ( stg == &n_nn2_stage_6 ) { stg->bgcloud_sprite[ i ].y -= 400; }
@@ -304,7 +304,7 @@ n_nn2_bgcloud_action( n_nn2 *p )
 
 		n_sprite *s = &p->stage->bgcloud_sprite[ i ];
 
-		if ( n_game_timer( &p->stage->bgcloud_timer[ i ], p->stage->bgcloud_interval[ i ] ) )
+		if ( n_bmp_ui_timer( &p->stage->bgcloud_timer[ i ], p->stage->bgcloud_interval[ i ] ) )
 		{
 			s->x--;
 			if ( s->x < -s->sx ) { s->x = p->stage->map_sx; }

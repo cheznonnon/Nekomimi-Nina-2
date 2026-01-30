@@ -67,27 +67,27 @@ n_nn2_stage_6_init( n_nn2 *p )
 
 	n_object_map_queue( p, &s->map_queue, s, N_OBJECT_MAP_QUEUE_FISH_1 );
 
-	p->share->fish1_sprite.x = n_game_random( s->map_sx );
+	p->share->fish1_sprite.x = n_random_range( s->map_sx );
 
-	p->share->fish1_sprite.direction = 1 + n_game_random( 2 );
+	p->share->fish1_sprite.direction = 1 + n_random_range( 2 );
 
 
 	n_object_init( p, &p->share->fish2_sprite, &p->fish_bmp );
 
 	n_object_map_queue( p, &s->map_queue, s, N_OBJECT_MAP_QUEUE_FISH_2 );
 
-	p->share->fish2_sprite.x = n_game_random( s->map_sx );
+	p->share->fish2_sprite.x = n_random_range( s->map_sx );
 
-	p->share->fish2_sprite.direction = 1 + n_game_random( 2 );
+	p->share->fish2_sprite.direction = 1 + n_random_range( 2 );
 
 
 	n_object_init( p, &p->share->fish3_sprite, &p->fish_bmp );
 
 	n_object_map_queue( p, &s->map_queue, s, N_OBJECT_MAP_QUEUE_FISH_3 );
 
-	p->share->fish3_sprite.x = n_game_random( s->map_sx );
+	p->share->fish3_sprite.x = n_random_range( s->map_sx );
 
-	p->share->fish3_sprite.direction = 1 + n_game_random( 2 );
+	p->share->fish3_sprite.direction = 1 + n_random_range( 2 );
 
 
 	n_nn2_stage_init_center( s );

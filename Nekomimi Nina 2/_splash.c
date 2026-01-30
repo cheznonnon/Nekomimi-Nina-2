@@ -17,11 +17,11 @@ n_splash_smoke_kernel( n_nn2 *p, n_type_gfx x, n_type_gfx y )
 	int i = 0;
 	n_posix_loop
 	{
-		n_type_gfx sz = n_game_random( N_NN2_SPLASH_SIZE );
+		n_type_gfx sz = n_random_range( N_NN2_SPLASH_SIZE );
 		n_type_gfx hf = sz / 2;
 
-		n_type_gfx rx = n_game_random( sz );
-		n_type_gfx ry = n_game_random( sz );
+		n_type_gfx rx = n_random_range( sz );
+		n_type_gfx ry = n_random_range( sz );
 
 		//n_bmp_circle( p->canvas, x + rx - hf, y + ry - hf, sz,sz,    color );
 		//n_bmp_hoop  ( p->canvas, x + rx - hf, y + ry - hf, sz,sz, 2, edge  );
@@ -55,26 +55,26 @@ n_splash_water_kernel( n_nn2 *p, n_type_gfx x, n_type_gfx y )
 	n_posix_loop
 	{
 
-		if ( 0 == n_game_random( 4 ) )
+		if ( 0 == n_random_range( 4 ) )
 		{
-			n_type_gfx size = 12 + n_game_random( 12 );
+			n_type_gfx size = 12 + n_random_range( 12 );
 			n_type_gfx half = size / 2;
 
-			n_type_gfx rx = n_game_random( size * 2 );
-			n_type_gfx ry = n_game_random( size * 2 );
+			n_type_gfx rx = n_random_range( size * 2 );
+			n_type_gfx ry = n_random_range( size * 2 );
 
 			extern void n_object_kirakira_bmp( n_bmp *bmp, n_type_gfx sx, n_type_gfx sy, u32 bg, u32 fg );
 			n_object_kirakira_bmp( &p->splash_water_kirakira, size,size, 0, n_bmp_white );
 
 			n_bmp_transcopy( &p->splash_water_kirakira, p->canvas, 0,0,size,size, x + rx - half, y + ry - half );
 		} else {
-			n_type_gfx size = 8 + n_game_random( 8 );
+			n_type_gfx size = 8 + n_random_range( 8 );
 			n_type_gfx half = size / 2;
 
-			n_type_gfx rx = n_game_random( size * 2 );
-			n_type_gfx ry = n_game_random( size * 2 );
+			n_type_gfx rx = n_random_range( size * 2 );
+			n_type_gfx ry = n_random_range( size * 2 );
 
-			n_type_real blend = (n_type_real) n_game_random( 255 ) / 255;
+			n_type_real blend = (n_type_real) n_random_range( 255 ) / 255;
 
 			u32 c = n_bmp_blend_pixel( color, n_bmp_white, blend );
 

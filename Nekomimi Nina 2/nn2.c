@@ -81,6 +81,18 @@ n_nn2_debug_hangup_detector( NSString *nsstr )
 
 
 
+n_type_gfx
+n_game_centering( n_type_gfx a, n_type_gfx b )
+{
+
+	// [!] : ( ( a / 2 ) - ( b / 2 ) ) == ( ( a - b ) / 2 )
+
+	return ( a - b ) / 2;
+}
+
+
+
+
 #include "_sprite.c"
 
 
@@ -570,8 +582,9 @@ typedef struct {
 	BOOL        redraw_onoff;
 	BOOL        game_onoff;
 
-	CGFloat     interval_frame;
-	CGFloat     interval_display;
+	u32          interval_loop;
+	u32          interval_frame;
+	u32          interval_display;
 
 	NSWindow   *window;
 	NSWindow   *sheet;
@@ -1186,8 +1199,8 @@ n_nn2_bmp_flush_mixer_multithread( n_nn2 *p, n_bmp *bmp, u32 color_mix, n_type_r
 	n_type_gfx slice = count / cores;
 
 
-	n_posix_bool prv = n_bmp_is_multithread;
-	n_bmp_is_multithread = n_posix_true;
+	BOOL prv = n_bmp_is_multithread;
+	n_bmp_is_multithread = TRUE;
 
 
 	int offset = 0;
@@ -1564,14 +1577,14 @@ n_nn2_init( n_nn2 *p )
 
 	n_random_shuffle();
 
-	n_bmp_safemode = n_posix_false;
+	n_bmp_safemode = FALSE;
 
-	n_bmp_transparent_onoff_default = n_posix_false;
+	n_bmp_transparent_onoff_default = FALSE;
 
-	n_bmp_flip_onoff = n_posix_true;
+	n_bmp_flip_onoff = TRUE;
 
 
-	n_game_transition_percent_smooth = n_posix_true;
+	n_bmp_ui_transition_percent_smooth = TRUE;
 
 
 	n_random_shuffle();
@@ -1658,8 +1671,8 @@ n_nn2_init_rc( n_nn2 *p )
 	n_nn2_bmp_new( &p->nina_stub , p->nina_sx, p->nina_sy );
 
 
-	n_posix_bool prv = n_bmp_is_multithread;
-	n_bmp_is_multithread = n_posix_true;
+	BOOL prv = n_bmp_is_multithread;
+	n_bmp_is_multithread = TRUE;
 
 	{
 		NSOperation *o = [NSBlockOperation blockOperationWithBlock:^{
@@ -2155,7 +2168,7 @@ n_nn2_draw( n_nn2 *p )
 		if ( n_nn2_stage_stand_onoff_cloud( p ) )
 		{
 			static u32 timer = 0;
-			if ( n_game_timer( &timer, 12 ) )
+			if ( n_bmp_ui_timer( &timer, 12 ) )
 			{
 				static CGFloat value = 0;
 
@@ -2680,7 +2693,7 @@ n_nn2_loop( n_nn2 *p )
 				goto n_goto_fall;
 			}
 
-			if ( n_game_timer( &p->brake_timer, N_NN2_DASH_BRAKE_MSEC ) )
+			if ( n_bmp_ui_timer( &p->brake_timer, N_NN2_DASH_BRAKE_MSEC ) )
 			{
 				p->brake_phase = N_NN2_DASH_BRAKE_NONE;
 

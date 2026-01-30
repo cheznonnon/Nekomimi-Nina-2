@@ -280,12 +280,12 @@ n_nn2_stage_transition( n_nn2 *p, n_nn2_stage *from, n_nn2_stage *to )
 
 	if ( is_first )
 	{
-		p->transition_type = N_GAME_TRANSITION_WIPE_Y;
+		p->transition_type = N_BMP_UI_TRANSITION_WIPE_Y;
 	} else  {
 		//p->transition_type++;
 		//if ( p->transition_type > N_GAME_TRANSITION_LAST ) { p->transition_type = N_GAME_TRANSITION_WIPE_X; }
 
-		p->transition_type = N_GAME_TRANSITION_FADE;
+		p->transition_type = N_BMP_UI_TRANSITION_FADE;
 	}
 
 //p->transition_type = N_GAME_TRANSITION_CIRCLE;
@@ -308,8 +308,8 @@ n_nn2_stage_transition( n_nn2 *p, n_nn2_stage *from, n_nn2_stage *to )
 	p->transition_percent = 0;
 
 
-	n_game_transition_circle_x = p->sx / 2;
-	n_game_transition_circle_y = p->sy / 2;
+	n_bmp_ui_transition_circle_x = p->sx / 2;
+	n_bmp_ui_transition_circle_y = p->sy / 2;
 
 
 //NSLog( @"%d", p->stage->nina_x );
@@ -576,8 +576,8 @@ void
 n_nn2_stage_init( n_nn2 *p )
 {
 
-	n_posix_bool prv = n_bmp_is_multithread;
-	n_bmp_is_multithread = n_posix_true;
+	BOOL prv = n_bmp_is_multithread;
+	n_bmp_is_multithread = TRUE;
 
 
 	NSOperation *o;

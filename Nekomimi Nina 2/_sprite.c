@@ -42,7 +42,7 @@ typedef struct n_sprite_struct {
 
 	int             frame;
 	int             index;
-	n_posix_bool    once;
+	BOOL            once;
 
 
 	// [!] : for non-player objects
@@ -146,7 +146,7 @@ n_sprite_rewind( n_sprite *p )
 
 	p->frame = 0;
 	p->index = 0;
-	p->once  = n_posix_false;
+	p->once  = FALSE;
 
 
 	return;

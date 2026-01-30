@@ -277,7 +277,7 @@ n_object_treasure_draw_heart( n_nn2 *p )
 		static int i = 0;
 		static u32 t = 0;
 
-		if ( n_game_timer( &t, 100 ) )
+		if ( n_bmp_ui_timer( &t, 100 ) )
 		{
 			i++;
 			if ( i >= 4 ) { i = 0; }
@@ -437,7 +437,7 @@ n_object_treasure_loop( n_nn2 *p )
 	} else
 	if ( n_object_treasure_is_running( p ) )
 	{
-		if ( n_game_timer( &timer, msec ) )
+		if ( n_bmp_ui_timer( &timer, msec ) )
 		{
 			p->stage->treasure_state++;
 			timer = n_posix_tickcount();
@@ -446,7 +446,7 @@ n_object_treasure_loop( n_nn2 *p )
 	} else
 	if ( p->stage->treasure_state == ( N_NN2_TREASURE_BMP_MAX + 1 - 2 ) )
 	{
-		if ( n_game_timer( &timer, msec ) )
+		if ( n_bmp_ui_timer( &timer, msec ) )
 		{
 			p->stage->treasure_state++;
 			//timer = n_posix_tickcount();

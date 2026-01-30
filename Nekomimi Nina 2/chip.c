@@ -20,7 +20,7 @@ n_nn2_map_dokan_stage_number( n_nn2 *p, int stage_number )
 	if ( 255 == stage_number )
 	{
 #ifdef N_NN2_STAGE_SHUFFLE
-		//stage_number = 2 + n_game_random( 4 );
+		//stage_number = 2 + n_random_range( 4 );
 		stage_number = p->dokan_stage_number_shuffle;
 //NSLog( @"Shuffle" );
 #else
@@ -1053,7 +1053,7 @@ n_chip_pass_thru_go( n_nn2 *p, n_type_gfx mx, n_type_gfx my )
 	u32 e = d;
 
 	//static u32 timer = 0;
-	//if ( n_game_timer( &timer, 33 ) )
+	//if ( n_bmp_ui_timer( &timer, 33 ) )
 	{
 		d += 4;
 		if ( d > 255 ) { d = 255; }
@@ -1334,8 +1334,8 @@ n_chip_draw( n_nn2 *p )
 		if ( p->stage->camera_mode == N_CAMERAWORK_LOOP )
 		{
 
-			n_posix_bool prv = n_bmp_is_multithread;
-			n_bmp_is_multithread = n_posix_true;
+			BOOL prv = n_bmp_is_multithread;
+			n_bmp_is_multithread = TRUE;
 
 			n_type_real blend = 0.5;
 			if ( p->stage != &n_nn2_stage_7 ) { blend = 0.0; }
@@ -1412,8 +1412,8 @@ n_chip_draw( n_nn2 *p )
 	}
 
 
-	n_posix_bool prv = n_bmp_is_multithread;
-	n_bmp_is_multithread = n_posix_true;
+	BOOL prv = n_bmp_is_multithread;
+	n_bmp_is_multithread = TRUE;
 
 
 	n_type_gfx msx = N_BMP_SX( &p->stage->map );
