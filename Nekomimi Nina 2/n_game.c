@@ -479,6 +479,11 @@ static NonnonGame *n_nn2_global = NULL;
 
 }
 
+- (BOOL) isOpaque {
+//NSLog( @" isOpaque " );
+	return NO;
+}
+
 - (void)drawRect:(NSRect)rect
 {
 //NSLog( @"drawRect" );

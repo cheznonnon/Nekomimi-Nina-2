@@ -168,7 +168,7 @@ n_object_bell_info( n_nn2 *p, n_bmp *bmp, int count, int fxsize )
 	n_gdi gdi; n_gdi_zero( &gdi );
 
 
-	n_posix_char str[ 100 ]; n_posix_sprintf( str, " x %d", count );
+	n_posix_char str[ 100 ]; n_posix_snprintf_literal( str, 100, " x %d", count );
 
 	gdi.base_color_bg       = n_bmp_white_invisible;
 
@@ -207,12 +207,12 @@ n_object_bell_stage_number( n_nn2 *p, n_bmp *bmp, int number, n_bmp *bmp_indicat
 		gap_a = 4;
 		gap_b = 0;
 		gap_c = 8;
-		n_posix_sprintf( str, "x%d", number );
+		n_posix_snprintf( str, 100, "x%d", number );
 	} else {
 		gap_a = 4;
 		gap_b = 8;
 		gap_c = 8;
-		n_posix_sprintf( str, "%d", number );
+		n_posix_snprintf( str, 100, "%d", number );
 	}
 
 

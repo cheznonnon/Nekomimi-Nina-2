@@ -608,9 +608,9 @@ n_nn2_dokan_label_maker( n_nn2 *p )
 
 		if ( i >= N_NN2_STAGE_MAX )
 		{
-			n_posix_sprintf( str, "?" );
+			n_posix_snprintf_literal( str, 100, "?" );
 		} else {
-			n_posix_sprintf( str, "%d", i );
+			n_posix_snprintf_literal( str, 100, "%d", i );
 		}
 
 

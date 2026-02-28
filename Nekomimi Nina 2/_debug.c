@@ -87,7 +87,7 @@ n_nn2_debug_dash( n_nn2 *p )
 	n_posix_char str[ 1024 ];
 
 
-	n_posix_sprintf_literal( str, "Dash : %d", p->dash_value );
+	n_posix_snprintf_literal( str, 1024, "Dash : %d", p->dash_value );
 
 
 	n_posix_strcat( str, " : " );
