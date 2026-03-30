@@ -207,7 +207,7 @@ n_nn2_title_go( n_nn2 *p )
 		{
 			if ( str[ i ] != N_STRING_CHAR_SPACE )
 			{
-				n_bmp_rasterizer( &p->title_neko, p->canvas, x,y, p->weather_gradient_color, FALSE );
+				n_bmp_rasterizer( &p->title_neko, p->canvas, x,y, p->weather_gradient_color );
 			}
 
 			x += sx;

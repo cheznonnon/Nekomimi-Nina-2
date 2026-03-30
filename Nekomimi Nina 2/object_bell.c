@@ -262,7 +262,7 @@ n_object_bell_stage_number( n_nn2 *p, n_bmp *bmp, int number, n_bmp *bmp_indicat
 	n_type_gfx x = gap_a + N_BMP_SX( bmp_indicator ) + gap_b;
 	n_type_gfx y = n_game_centering( sy, N_BMP_SY( &bmp_no ) );
 
-	n_bmp_rasterizer( &bmp_no, bmp, x,y, n_bmp_white_invisible, FALSE );
+	n_bmp_rasterizer( &bmp_no, bmp, x,y, n_bmp_white_invisible );
 
 
 	n_bmp_free_fast( &bmp_bg );
