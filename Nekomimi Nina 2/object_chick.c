@@ -20,6 +20,7 @@ n_object_chick_indicator_maker( n_nn2 *p )
 
 	n_bmp_flush_antialias( &p->chick_stage_number_indicator, 1.0 );
 	n_bmp_scaler_lil( &p->chick_stage_number_indicator, 2 );
+	//n_bmp_resampler( &p->chick_stage_number_indicator, 0.5, 0.5 );
 
 
 	return;

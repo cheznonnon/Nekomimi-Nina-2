@@ -207,6 +207,18 @@ n_nn2_rc_load( NSString *name, n_bmp *bmp, int scaler )
 	n_nn2_rc_load_raw( name, bmp );
 
 
+	// [x] : crisp too much
+	// [x] : heavy too much
+/*
+	n_bmp_flush_antialias( bmp, 1.0 );
+	n_bmp_flush_antialias( bmp, 1.0 );
+
+	n_type_real ratio = 0.25;
+	n_bmp_resampler( bmp, ratio, ratio );
+
+	return;
+*/
+
 	int i = 0;
 	n_posix_loop
 	{
@@ -2041,6 +2053,7 @@ n_nn2_init_rc( n_nn2 *p )
 		n_nn2_rc_load( @"rc/indicator/nina", &p->nina_indicator, p->scaler );
 		n_bmp_flush_antialias( &p->nina_indicator, 1.0 );
 		n_bmp_scaler_lil( &p->nina_indicator, 2 );
+		//n_bmp_resampler( &p->nina_indicator, 0.5, 0.5 );
 
 		n_nn2_stage_pass_thru_maker( p );
 

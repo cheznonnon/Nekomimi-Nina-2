@@ -595,10 +595,6 @@ n_nn2_dokan_label_maker( n_nn2 *p )
 	gdi.text_size           = 18;
 	gdi.text_style          = N_GDI_TEXT_BOLD | N_GDI_TEXT_MAC_NO_CROP;
 	gdi.text_color_main     = color_fg;
-	gdi.text_color_contour  = color_fg;
-	gdi.text_color_shadow   = color_fg;
-	gdi.text_fxsize1        = 0;
-	gdi.text_fxsize2        = 0;
 
 
 	int i = 0;

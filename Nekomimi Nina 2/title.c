@@ -31,12 +31,11 @@ n_nn2_title_gdi( n_bmp *bmp, n_posix_char *str, n_type_gfx sz )
 	gdi.text                = str;
 	gdi.text_font           = N_NN2_FONT_NAME_TITLE;
 	gdi.text_size           = sz;
-	gdi.text_style          = N_GDI_TEXT_CONTOUR;
 	gdi.text_color_main     = n_bmp_rgb_mac( 255,255,255 );
-	gdi.text_color_contour  = n_bmp_rgb_mac(   0,150,200 );
-	gdi.text_color_shadow   = n_bmp_rgb_mac(   0,150,200 );
-	gdi.text_fxsize1        = 1;
-	gdi.text_fxsize2        = 1;
+
+	gdi.text_effect_style[ 0 ] = N_GDI_EFFECT_OUTLINE;
+	gdi.text_effect_color[ 0 ] = n_bmp_rgb_mac(   0,150,200 );
+	gdi.text_effect_param[ 0 ] = 1;
 
 
 	n_bmp_free( bmp );
@@ -72,12 +71,11 @@ n_nn2_title_gdi_press_A_button( n_bmp *bmp, n_posix_char *str )
 	gdi.text                = str;
 	gdi.text_font           = N_NN2_FONT_NAME_TITLE;
 	gdi.text_size           = 16;
-	gdi.text_style          = N_GDI_TEXT_CONTOUR;
 	gdi.text_color_main     = n_bmp_rgb_mac( 255,255,255 );
-	gdi.text_color_contour  = n_bmp_rgb_mac(   0,150,200 );
-	gdi.text_color_shadow   = n_bmp_rgb_mac(   0,150,200 );
-	gdi.text_fxsize1        = 1;
-	gdi.text_fxsize2        = 1;
+
+	gdi.text_effect_style[ 0 ] = N_GDI_EFFECT_OUTLINE;
+	gdi.text_effect_color[ 0 ] = n_bmp_rgb_mac(   0,150,200 );
+	gdi.text_effect_param[ 0 ] = 1;
 
 
 	n_bmp_free( bmp );

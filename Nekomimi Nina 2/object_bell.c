@@ -175,12 +175,12 @@ n_object_bell_info( n_nn2 *p, n_bmp *bmp, int count, int fxsize )
 	gdi.text                = str;
 	gdi.text_font           = N_NN2_FONT_NAME_INDICATOR;
 	gdi.text_size           = 20;
-	gdi.text_style          = N_GDI_TEXT_SMOOTH | N_GDI_TEXT_CONTOUR;
+	gdi.text_style          = N_GDI_TEXT_SMOOTH;
 	gdi.text_color_main     = n_bmp_rgb_mac( 255,255,255 );
-	gdi.text_color_contour  = n_bmp_rgb_mac(   0,150,200 );
-	gdi.text_color_shadow   = n_bmp_rgb_mac(   0,150,200 );
-	gdi.text_fxsize1        = fxsize;
-	gdi.text_fxsize2        = fxsize;
+
+	gdi.text_effect_style[ 0 ] = N_GDI_EFFECT_OUTLINE;
+	gdi.text_effect_color[ 0 ] = n_bmp_rgb_mac(   0,150,200 );
+	gdi.text_effect_param[ 0 ] = fxsize;
 
 
 	n_bmp_free( bmp );
