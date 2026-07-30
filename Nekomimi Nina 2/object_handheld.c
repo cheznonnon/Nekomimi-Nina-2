@@ -154,7 +154,7 @@ n_object_handheld_go( n_nn2 *p )
 {
 //return FALSE;
 
-	if ( N_NN2_DEBUG_LOOP ) { n_nn2_debug_hangup_detector( @"n_object_handheld_go()" ); }
+	if ( N_NN2_DEBUG_LOOP ) { n_nn2_debug_hangup_detector( "n_object_handheld_go()" ); }
 
 
 	if ( N_NN2_DEBUG_OBJECT_CHARA ) { return FALSE; }
@@ -184,7 +184,7 @@ n_object_handheld_go( n_nn2 *p )
 		if ( s == NULL ) { break; }
 
 		BOOL b = n_chara_object_collision_detail( p, s );
-//NSLog( @"%d %d", p->object_handheld_skim_ud, p->object_handheld_skim_lr );
+//n_nn2_log( "%d %d", p->object_handheld_skim_ud, p->object_handheld_skim_lr );
 
 		// [x] : conflict : not working : n_object_handheld_on()
 		if ( ( p->object_handheld_skim_ud )&&( p->object_handheld_skim_lr ) )
@@ -272,7 +272,7 @@ n_object_handheld_wall_lr_loop( n_nn2 *p, n_sprite *s )
 void
 n_object_handheld_jam_resolver( n_nn2 *p, BOOL is_released )
 {
-//NSLog( @"n_interobject_handheld_jam_resolver()" );
+//n_nn2_log( "n_interobject_handheld_jam_resolver()" );
 //return;
 
 	n_sprite *s = p->object_handheld_sprite;

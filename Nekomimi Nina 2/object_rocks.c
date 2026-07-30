@@ -22,7 +22,7 @@ n_object_rocks_action_is_hit( n_nn2 *p, n_sprite *s )
 
 	BOOL ud = n_chara_object_collision_ud_detail( p, s, YES );
 	BOOL lr = n_chara_object_collision_lr_detail( p, s, YES, YES );
-//NSLog( @"UD %d : LR %d", ud, lr );
+//n_nn2_log( "UD %d : LR %d", ud, lr );
 
 
 	return ( ( ud ) && ( lr ) );

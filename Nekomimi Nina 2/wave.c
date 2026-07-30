@@ -55,7 +55,7 @@ n_nn2_wave_draw( n_nn2 *p )
 		p->stage->camera_wave_offset += 16;
 	}
 */
-//NSLog( @"%d", p->stage->camera_wave_offset );
+//n_nn2_log( "%d", p->stage->camera_wave_offset );
 
 	if ( p->stage->camera_wave_offset >= threshold )
 	{

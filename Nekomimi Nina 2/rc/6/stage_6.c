@@ -22,10 +22,10 @@ n_nn2_stage_6_init( n_nn2 *p )
 
 	// [!] : Map
 
-	n_nn2_rc_load_map( @"rc/6/map/0" , &s->map );
-	n_nn2_rc_load_map( @"rc/6/map/1" , &s->map_queue );
-	n_nn2_rc_load_map( @"rc/6/map/2" , &s->map_dokan );
-	n_nn2_rc_load_map( @"rc/6/map/15", &s->map_bell  );
+	n_nn2_rc_load_map( "rc/6/map/0" , &s->map );
+	n_nn2_rc_load_map( "rc/6/map/1" , &s->map_queue );
+	n_nn2_rc_load_map( "rc/6/map/2" , &s->map_dokan );
+	n_nn2_rc_load_map( "rc/6/map/15", &s->map_bell  );
 
 	n_bmp_new( &s->map_label, N_BMP_SX( &s->map ), N_BMP_SY( &s->map ) );
 
@@ -99,7 +99,7 @@ n_nn2_stage_6_init( n_nn2 *p )
 void
 n_nn2_stage_6_reset( n_nn2 *p )
 {
-//NSLog( @"n_nn2_stage_6_reset()" );
+//n_nn2_log( "n_nn2_stage_6_reset()" );
 
 	n_nn2_stage *s = &n_nn2_stage_6;
 

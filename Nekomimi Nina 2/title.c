@@ -119,7 +119,7 @@ n_nn2_title_go( n_nn2 *p )
 
 	typedef struct {
 
-		CGFloat value;
+		n_type_real value;
 
 	} n_nn2_title_pop;
 
@@ -135,8 +135,8 @@ n_nn2_title_go( n_nn2 *p )
 		n_type_gfx chars = (n_type_gfx) strlen( str );
 		n_type_gfx    sz = p->sx / chars;
 
-		n_nn2_rc_load( @"rc/title/neko", &p->title_neko, 1 );
-//NSLog( @"%d %d", sz, N_BMP_SX( &p->title_neko ) );
+		n_nn2_rc_load( "rc/title/neko", &p->title_neko, 1 );
+//n_nn2_log( "%d %d", sz, N_BMP_SX( &p->title_neko ) );
 
 		n_type_gfx sx = N_BMP_SX( &p->title_neko );
 		//n_type_gfx sy = N_BMP_SY( &p->title_neko );
@@ -224,7 +224,7 @@ n_nn2_title_go( n_nn2 *p )
 		{
 			if ( str[ i ] != N_STRING_CHAR_SPACE )
 			{
-				CGFloat pos = n_nn2_flowy_effect( 7, pop[ i ].value );
+				n_type_real pos = n_nn2_flowy_effect( 7, pop[ i ].value );
 
 				n_bmp_transcopy( &bmp[ i ], p->canvas, 0,0,sx,sy, x,y-pos );
 //n_bmp_box( p->canvas, x,y,sx,sy, n_bmp_black );
@@ -268,8 +268,8 @@ n_nn2_title_go( n_nn2 *p )
 			n_type_gfx x = ( p->sx - sx ) / 2;
 			n_type_gfx y = ( p->sy - sy ) / 3 * 2;
 
-			static u32     timer = 0;
-			static CGFloat blend = 0.0;
+			static u32         timer = 0;
+			static n_type_real blend = 0.0;
 
 			if ( phase == -1 )
 			{
@@ -309,7 +309,7 @@ n_nn2_title_go( n_nn2 *p )
 				}
 			}
 
-			CGFloat pos = n_nn2_flowy_effect( 100, blend ) * 0.01;
+			n_type_real pos = n_nn2_flowy_effect( 100, blend ) * 0.01;
 
 			n_bmp_blendcopy( &press_A_button, p->canvas, 0,0,sx,sy, x,y, pos );
 		}

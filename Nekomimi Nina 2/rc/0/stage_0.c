@@ -22,12 +22,12 @@ n_nn2_stage_0_init( n_nn2 *p )
 
 	// [!] : Map
 
-	n_nn2_rc_load_map( @"rc/0/map/0" , &s->map );
-	n_nn2_rc_load_map( @"rc/0/map/1" , &s->map_queue  );
-	n_nn2_rc_load_map( @"rc/0/map/2" , &s->map_dokan  );
-	n_nn2_rc_load_map( @"rc/0/map/3" , &s->map_move_h );
-	n_nn2_rc_load_map( @"rc/0/map/4" , &s->map_move_v );
-	n_nn2_rc_load_map( @"rc/0/map/15", &s->map_bell   );
+	n_nn2_rc_load_map( "rc/0/map/0" , &s->map );
+	n_nn2_rc_load_map( "rc/0/map/1" , &s->map_queue  );
+	n_nn2_rc_load_map( "rc/0/map/2" , &s->map_dokan  );
+	n_nn2_rc_load_map( "rc/0/map/3" , &s->map_move_h );
+	n_nn2_rc_load_map( "rc/0/map/4" , &s->map_move_v );
+	n_nn2_rc_load_map( "rc/0/map/15", &s->map_bell   );
 
 	n_bmp_new( &s->map_label, N_BMP_SX( &s->map ), N_BMP_SY( &s->map ) );
 

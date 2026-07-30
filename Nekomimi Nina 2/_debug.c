@@ -146,7 +146,7 @@ n_nn2_debug_dash( n_nn2 *p )
 	} //else
 
 
-	NSLog( @"%s", str );
+	n_nn2_log( "%s", str );
 
 
 	return;
@@ -172,47 +172,47 @@ n_chara_collision_wall_debug( n_nn2 *p, int wall )
 
 	if ( wall & N_CHARA_COLLISION_LR_HEAD )
 	{
-		NSLog( @"N_CHARA_COLLISION_LR_HEAD" );
+		n_nn2_log( "N_CHARA_COLLISION_LR_HEAD" );
 	}
 
 	if ( wall & N_CHARA_COLLISION_LR_FOOT )
 	{
-		NSLog( @"N_CHARA_COLLISION_LR_FOOT" );
+		n_nn2_log( "N_CHARA_COLLISION_LR_FOOT" );
 	}
 
 	if ( wall & N_CHARA_COLLISION_LR_SLIP )
 	{
-		NSLog( @"N_CHARA_COLLISION_LR_SLIP" );
+		n_nn2_log( "N_CHARA_COLLISION_LR_SLIP" );
 	}
 
 	if ( wall & N_CHARA_COLLISION_LR_WALL )
 	{
-		NSLog( @"N_CHARA_COLLISION_LR_WALL" );
+		n_nn2_log( "N_CHARA_COLLISION_LR_WALL" );
 	}
 
 	if ( wall & N_CHARA_COLLISION_LR_STOP )
 	{
-		NSLog( @"N_CHARA_COLLISION_LR_STOP" );
+		n_nn2_log( "N_CHARA_COLLISION_LR_STOP" );
 	}
 
 	if ( wall & N_CHARA_COLLISION_LR_WL_L )
 	{
-		NSLog( @"N_CHARA_COLLISION_LR_WL_L" );
+		n_nn2_log( "N_CHARA_COLLISION_LR_WL_L" );
 	}
 
 	if ( wall & N_CHARA_COLLISION_LR_WL_R )
 	{
-		NSLog( @"N_CHARA_COLLISION_LR_WL_R" );
+		n_nn2_log( "N_CHARA_COLLISION_LR_WL_R" );
 	}
 
 	if ( wall & N_CHARA_COLLISION_STOP__L )
 	{
-		NSLog( @"N_CHARA_COLLISION_STOP__L" );
+		n_nn2_log( "N_CHARA_COLLISION_STOP__L" );
 	}
 
 	if ( wall & N_CHARA_COLLISION_STOP__R )
 	{
-		NSLog( @"N_CHARA_COLLISION_STOP__R" );
+		n_nn2_log( "N_CHARA_COLLISION_STOP__R" );
 	}
 
 

@@ -18,11 +18,11 @@ n_object_bell_map_init( n_nn2 *p, n_nn2_stage *s )
 	n_posix_loop
 	{//break;
 		u32 data = 0; n_bmp_ptr_get( &s->map_bell, x,y, &data );
-//NSLog( @"%d", data );
+//n_nn2_log( "%d", data );
 
 		if ( 100 == n_bmp_r_mac( data ) )
 		{
-//NSLog( @"found : %d %d", x, y );
+//n_nn2_log( "found : %d %d", x, y );
 			count++;
 		}
 
@@ -36,7 +36,7 @@ n_object_bell_map_init( n_nn2 *p, n_nn2_stage *s )
 		}
 	}
 
-//NSLog( @"stage %d : count = %d", n_nn2_stage_number_get( s ), count ); return;
+//n_nn2_log( "stage %d : count = %d", n_nn2_stage_number_get( s ), count ); return;
 
 	if ( count == 0 ) { return; }
 
@@ -59,11 +59,11 @@ n_object_bell_map_init( n_nn2 *p, n_nn2_stage *s )
 	n_posix_loop
 	{//break;
 		u32 data = 0; n_bmp_ptr_get( &s->map_bell, x,y, &data );
-//NSLog( @"%d", data );
+//n_nn2_log( "%d", data );
 
 		if ( 100 == n_bmp_r_mac( data ) )
 		{
-//NSLog( @"found : %d %d", x, y );
+//n_nn2_log( "found : %d %d", x, y );
 
 			map[ i ].x = x;
 			map[ i ].y = y;
@@ -117,9 +117,9 @@ void
 n_object_bell_init( n_nn2 *p )
 {
 
-	n_nn2_rc_load( @"rc/chip/bell/0", &p->bell_bmp_0 , p->scaler );
-	n_nn2_rc_load( @"rc/chip/bell/1", &p->bell_bmp_1 , p->scaler );
-	n_nn2_rc_load( @"rc/chip/bell/2", &p->bell_bmp_2 , p->scaler );
+	n_nn2_rc_load( "rc/chip/bell/0", &p->bell_bmp_0 , p->scaler );
+	n_nn2_rc_load( "rc/chip/bell/1", &p->bell_bmp_1 , p->scaler );
+	n_nn2_rc_load( "rc/chip/bell/2", &p->bell_bmp_2 , p->scaler );
 
 	p->bell_count     = N_NN2_BELL_DEFAULT;
 	p->bell_count_prv = -1;
@@ -135,12 +135,12 @@ n_object_bell_reset( n_nn2 *p )
 	p->bell_count     =  N_NN2_BELL_DEFAULT;
 	p->bell_count_prv = -1;
 
-	n_nn2_rc_load_map( @"rc/1/map/0", &n_nn2_stage_1.map );
-	n_nn2_rc_load_map( @"rc/2/map/0", &n_nn2_stage_2.map );
-	n_nn2_rc_load_map( @"rc/3/map/0", &n_nn2_stage_3.map );
-	n_nn2_rc_load_map( @"rc/4/map/0", &n_nn2_stage_4.map );
-	n_nn2_rc_load_map( @"rc/5/map/0", &n_nn2_stage_5.map );
-	n_nn2_rc_load_map( @"rc/6/map/0", &n_nn2_stage_6.map );
+	n_nn2_rc_load_map( "rc/1/map/0", &n_nn2_stage_1.map );
+	n_nn2_rc_load_map( "rc/2/map/0", &n_nn2_stage_2.map );
+	n_nn2_rc_load_map( "rc/3/map/0", &n_nn2_stage_3.map );
+	n_nn2_rc_load_map( "rc/4/map/0", &n_nn2_stage_4.map );
+	n_nn2_rc_load_map( "rc/5/map/0", &n_nn2_stage_5.map );
+	n_nn2_rc_load_map( "rc/6/map/0", &n_nn2_stage_6.map );
 
 	n_object_bell_map_init( p, &n_nn2_stage_1 );
 	n_object_bell_map_init( p, &n_nn2_stage_2 );
@@ -163,7 +163,7 @@ n_object_bell_reset( n_nn2 *p )
 void
 n_object_bell_info( n_nn2 *p, n_bmp *bmp, int count, int fxsize )
 {
-//NSLog( @"n_object_bell_info()" );
+//n_nn2_log( "n_object_bell_info()" );
 
 	n_gdi gdi; n_gdi_zero( &gdi );
 
@@ -360,7 +360,7 @@ n_object_bell_draw( n_nn2 *p )
 			N_BMP_SX( &p->chick_stage_number_bmp ),
 			N_BMP_SY( &p->chick_stage_number_bmp ),
 			x, y,
-			1.0 - ( (CGFloat) p->chick_stage_number_remover / offset )
+			1.0 - ( (n_type_real) p->chick_stage_number_remover / offset )
 		);
 
 		x += p->chick_stage_number_remover;
@@ -440,7 +440,7 @@ n_object_bell_condition_detect( n_nn2 *p, n_type_gfx x, n_type_gfx y )
 //return TRUE;
 
 	u32 data = 0; n_bmp_ptr_get( &p->stage->map_dokan, x, y, &data );
-//NSLog( @"%d %d %d", n_bmp_r_mac( data ), n_bmp_g_mac( data ), n_bmp_b_mac( data ) );
+//n_nn2_log( "%d %d %d", n_bmp_r_mac( data ), n_bmp_g_mac( data ), n_bmp_b_mac( data ) );
 
 	data = n_nn2_map_enter_data_kind( data ) - 150;
 //data = 1;
@@ -459,7 +459,7 @@ n_object_bell_condition_detect( n_nn2 *p, n_type_gfx x, n_type_gfx y )
 		);
 	}
 
-//NSLog( @"%d %d", data, p->bell_count );
+//n_nn2_log( "%d %d", data, p->bell_count );
 
 	return ( data <= p->bell_count );
 }

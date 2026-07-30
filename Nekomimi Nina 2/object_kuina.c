@@ -242,7 +242,7 @@ n_object_kuina_action( n_nn2 *p, n_sprite *s )
 		BOOL ret = n_object_collision_gravity( p, s );
 		if ( ret )
 		{
-//NSLog( @"landing" );
+//n_nn2_log( "landing" );
 			s->jump_state = N_NN2_JUMP_STATE_NONE;
 			s->fall_step  = N_OBJ_STEP_FALL / 3;
 			s->is_landed  = TRUE;

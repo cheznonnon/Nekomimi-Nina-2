@@ -140,7 +140,7 @@ n_object_collision_wall_lr_loop( n_nn2 *p, n_sprite *s )
 	if ( s->dokan_onoff ) { return N_CHARA_COLLISION_LR_NONE; }
 
 
-	if ( N_NN2_DEBUG_LOOP ) { n_nn2_debug_hangup_detector( @"n_object_collision_wall_lr_loop_main()" ); }
+	if ( N_NN2_DEBUG_LOOP ) { n_nn2_debug_hangup_detector( "n_object_collision_wall_lr_loop_main()" ); }
 
 
 	int clamp = n_object_clamp( p, s );
@@ -239,7 +239,7 @@ n_object_collision_lr( n_nn2 *p, n_sprite *s )
 	if ( s->dokan_onoff ) { return FALSE; }
 
 
-	if ( N_NN2_DEBUG_LOOP ) { n_nn2_debug_hangup_detector( @"n_object_collision_lr()" ); }
+	if ( N_NN2_DEBUG_LOOP ) { n_nn2_debug_hangup_detector( "n_object_collision_lr()" ); }
 
 
 	BOOL ret = FALSE;
@@ -331,7 +331,7 @@ n_object_collision_ud_loop( n_nn2 *p, n_sprite *s, BOOL is_gravity )
 	if ( s->invisible ) { return FALSE; }
 
 
-	if ( N_NN2_DEBUG_LOOP ) { n_nn2_debug_hangup_detector( @"n_object_collision_ud_loop()" ); }
+	if ( N_NN2_DEBUG_LOOP ) { n_nn2_debug_hangup_detector( "n_object_collision_ud_loop()" ); }
 
 
 	n_type_gfx tx_l = s->x;
@@ -393,7 +393,7 @@ n_object_collision_ud_loop( n_nn2 *p, n_sprite *s, BOOL is_gravity )
 
 	BOOL ret = FALSE;
 
-//NSLog( @"%d %d", tx_l, tx_r );
+//n_nn2_log( "%d %d", tx_l, tx_r );
 
 //p->debug_chip_x = tx_r;
 //p->debug_chip_y = ty;
@@ -493,7 +493,7 @@ n_object_collision_gravity( n_nn2 *p, n_sprite *s )
 	}
 
 
-	if ( N_NN2_DEBUG_LOOP ) { n_nn2_debug_hangup_detector( @"n_object_collision_gravity()" ); }
+	if ( N_NN2_DEBUG_LOOP ) { n_nn2_debug_hangup_detector( "n_object_collision_gravity()" ); }
 
 
 	n_type_gfx step = s->fall_step;
@@ -535,8 +535,8 @@ n_object_collision_gravity( n_nn2 *p, n_sprite *s )
 
 	if ( s->y > p->stage->map_sy )
 	{
-//if ( s == &p->share->chick_sprite ) { NSLog( @"chick" ); }
-//if ( s == &p->share->rocks_sprite ) { NSLog( @"rocks" ); }
+//if ( s == &p->share->chick_sprite ) { n_nn2_log( "chick" ); }
+//if ( s == &p->share->rocks_sprite ) { n_nn2_log( "rocks" ); }
 
 		n_nn2_stage_throw_go( p, s, -1, -1 );
 	}
@@ -560,10 +560,10 @@ n_object_collision_heading( n_nn2 *p, n_sprite *s )
 	if ( s->dokan_onoff ) { return FALSE; }
 
 
-	if ( N_NN2_DEBUG_LOOP ) { n_nn2_debug_hangup_detector( @"n_object_collision_heading()" ); }
+	if ( N_NN2_DEBUG_LOOP ) { n_nn2_debug_hangup_detector( "n_object_collision_heading()" ); }
 
 
-	CGFloat pos = n_nn2_flowy_effect( s->jump_max, s->jump_float );
+	n_type_real pos = n_nn2_flowy_effect( s->jump_max, s->jump_float );
 
 	n_type_gfx step = pos - s->jump_pos_prv;
 
@@ -628,9 +628,9 @@ n_object_lift_collision_is_hit( n_nn2 *p, n_sprite *s, BOOL on_lift )
 
 		if ( ( d >= f )&&( d <= t ) ) { ret_ud = TRUE; }
 
-//if ( s == &p->stage->cld_h_0_sprite ) { NSLog( @"%d : %d %d : %d : %d", p->nina_y, f, t, d, ret_ud ); }
-//if ( s == &p->stage->cld_v_0_sprite ) { NSLog( @"%d : %d %d : %d : %d : %d : %d ", p->nina_y, f, t, d, ret_ud, s->jump_state, N_OBJ_ON_CLOUD ); }
-//if ( s == &p->share->rocks_sprite ) { NSLog( @"%d : %d %d %d", ret_ud, f, d, t ); }
+//if ( s == &p->stage->cld_h_0_sprite ) { n_nn2_log( "%d : %d %d : %d : %d", p->nina_y, f, t, d, ret_ud ); }
+//if ( s == &p->stage->cld_v_0_sprite ) { n_nn2_log( "%d : %d %d : %d : %d : %d : %d ", p->nina_y, f, t, d, ret_ud, s->jump_state, N_OBJ_ON_CLOUD ); }
+//if ( s == &p->share->rocks_sprite   ) { n_nn2_log( "%d : %d %d %d", ret_ud, f, d, t ); }
 	}
 
 	{
@@ -671,7 +671,7 @@ n_object_lift_collision_is_hit( n_nn2 *p, n_sprite *s, BOOL on_lift )
 		}
 	}
 
-//if ( s == &p->share->rocks_sprite ) { NSLog( @"%d %d", ret_ud, ret_lr ); }
+//if ( s == &p->share->rocks_sprite ) { n_nn2_log( "%d %d", ret_ud, ret_lr ); }
 
 
 	return ( ( ret_ud )&&( ret_lr ) );
@@ -704,7 +704,7 @@ n_object_map_queue( n_nn2 *p, n_bmp *queue, n_nn2_stage *stage, int target )
 	if ( n_bmp_error( queue ) ) { return; }
 
 
-	if ( N_NN2_DEBUG_LOOP ) { n_nn2_debug_hangup_detector( @"n_object_map_queue()" ); }
+	if ( N_NN2_DEBUG_LOOP ) { n_nn2_debug_hangup_detector( "n_object_map_queue()" ); }
 
 
 	n_type_gfx x = 0;
@@ -720,7 +720,7 @@ n_object_map_queue( n_nn2 *p, n_bmp *queue, n_nn2_stage *stage, int target )
 			{
 				stage->nina_x = x * p->mapchip_unit;
 				stage->nina_y = y * p->mapchip_unit;
-//NSLog( @"Found : %d %d", stage->nina_x, stage->nina_y );
+//n_nn2_log( "Found : %d %d", stage->nina_x, stage->nina_y );
 
 				n_chara_collision_force_landing( p );
 
@@ -733,7 +733,7 @@ n_object_map_queue( n_nn2 *p, n_bmp *queue, n_nn2_stage *stage, int target )
 			{
 				stage->cld_h_0_sprite.x = x * p->mapchip_unit;
 				stage->cld_h_0_sprite.y = y * p->mapchip_unit;
-//NSLog( @"Found : %d %d", stage->cld_h_0_sprite.x, stage->cld_h_0_sprite.y );
+//n_nn2_log( "Found : %d %d", stage->cld_h_0_sprite.x, stage->cld_h_0_sprite.y );
 
 				break;
 			} else
@@ -763,7 +763,7 @@ n_object_map_queue( n_nn2 *p, n_bmp *queue, n_nn2_stage *stage, int target )
 				p->share->rocks_sprite.x = x * p->mapchip_unit;
 				p->share->rocks_sprite.y = y * p->mapchip_unit;
 
-//NSLog( @"Found : %d %d", p->share->rocks_sprite.x, p->share->rocks_sprite.y );
+//n_nn2_log( "Found : %d %d", p->share->rocks_sprite.x, p->share->rocks_sprite.y );
 
 				break;
 			} else
@@ -836,7 +836,7 @@ n_object_map_queue( n_nn2 *p, n_bmp *queue, n_nn2_stage *stage, int target )
 		}
 	}
 
-//NSLog( @"Cloud Horz : %d %d", stage->cld_h_0_sprite.x, stage->cld_h_0_sprite.y );
+//n_nn2_log( "Cloud Horz : %d %d", stage->cld_h_0_sprite.x, stage->cld_h_0_sprite.y );
 
 
 	return;
@@ -942,7 +942,7 @@ n_object_action_move( n_nn2 *p, n_sprite *s )
 
 	if ( n_object_collision_gravity( p, s ) )
 	{
-//NSLog( @"landing" );
+//n_nn2_log( "landing" );
 		s->jump_state = N_NN2_JUMP_STATE_NONE;
 		s->is_landed  = TRUE;
 	}
@@ -972,7 +972,7 @@ n_object_action_jump( n_nn2 *p, n_sprite *s )
 		BOOL ret = n_object_collision_gravity( p, s );
 		if ( ret )
 		{
-//NSLog( @"landing" );
+//n_nn2_log( "landing" );
 			s->jump_state = N_NN2_JUMP_STATE_NONE;
 			s->is_landed  = TRUE;
 		}

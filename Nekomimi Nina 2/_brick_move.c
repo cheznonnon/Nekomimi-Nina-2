@@ -34,7 +34,7 @@ n_brick_move_animation( n_nn2 *p, n_type_gfx tx, n_type_gfx ty )
 
 			if ( s->override_y < -s->brick_move_max )
 			{
-//NSLog( @"phase 1 : %d", p->weather_transition_ready );
+//n_nn2_log( "phase 1 : %d", p->weather_transition_ready );
 
 				s->brick_move_phase = 2;
 
@@ -47,7 +47,7 @@ n_brick_move_animation( n_nn2 *p, n_type_gfx tx, n_type_gfx ty )
 
 			if ( s->override_y > 0 )
 			{
-//NSLog( @"phase 2 : %d", p->weather_transition_ready );
+//n_nn2_log( "phase 2 : %d", p->weather_transition_ready );
 
 				s->override_y       = 0;
 				s->brick_move_phase = 0;
@@ -93,7 +93,7 @@ n_brick_move_animation( n_nn2 *p, n_type_gfx tx, n_type_gfx ty )
 void
 n_brick_move_action_on( n_nn2 *p, n_type_gfx tx, n_type_gfx ty, BOOL is_heading )
 {
-//NSLog( @"n_brick_move_action_on()" );
+//n_nn2_log( "n_brick_move_action_on()" );
 
 	extern n_sprite* n_chip_get_auto( n_nn2 *p, n_type_gfx x, n_type_gfx y );
 

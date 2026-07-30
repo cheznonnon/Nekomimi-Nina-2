@@ -41,10 +41,10 @@ n_object_lift_reset( n_nn2 *p, n_sprite *s )
 
 // internal
 void
-n_object_lift_load_single( n_nn2 *p, n_bmp *bmp, CGFloat ratio )
+n_object_lift_load_single( n_nn2 *p, n_bmp *bmp, n_type_real ratio )
 {
 
-	n_nn2_rc_load( @"rc/object/lift/body", bmp, p->scaler );
+	n_nn2_rc_load( "rc/object/lift/body", bmp, p->scaler );
 	n_bmp_flush_transcopy( &p->lift_bmp_face, bmp );
 
 	n_type_gfx sx = N_BMP_SX( bmp );
@@ -245,7 +245,7 @@ n_object_lift_action_horz( n_nn2 *p, n_sprite *s )
 		}
 
 		u32 data = 0; n_bmp_ptr_get( &p->stage->map_move_h, s->x / p->mapchip_unit, s->y / p->mapchip_unit, &data );
-//NSLog( @"%d %d %d", n_bmp_r( data ), n_bmp_g( data ), n_bmp_b( data ) );
+//n_nn2_log( "%d %d %d", n_bmp_r( data ), n_bmp_g( data ), n_bmp_b( data ) );
 		if ( 255 == n_nn2_map_move_data_kind( data ) )
 		{
 			if ( s->direction == N_NN2_DIRECTION_LEFT )
@@ -283,7 +283,7 @@ void
 n_object_lift_action_vert( n_nn2 *p, n_sprite *s )
 {
 //return;
-//NSLog( @"%d", p->jump_state );
+//n_nn2_log( "%d", p->jump_state );
 
 	if ( s->invisible ) { return; }
 
@@ -320,10 +320,10 @@ n_object_lift_action_vert( n_nn2 *p, n_sprite *s )
 				break;
 			} else {
 				u32 data = 0; n_bmp_ptr_get( &p->stage->map_move_v, s->x / p->mapchip_unit, s->y / p->mapchip_unit, &data );
-//NSLog( @"%d %d %d", n_bmp_r( data ), n_bmp_g( data ), n_bmp_b( data ) );
+//n_nn2_log( "%d %d %d", n_bmp_r( data ), n_bmp_g( data ), n_bmp_b( data ) );
 				if ( 255 == n_nn2_map_move_data_kind( data ) )
 				{
-//NSLog( @"Stop" );
+//n_nn2_log( "Stop" );
 					s->jump_state = N_NN2_JUMP_STATE_FALL;
 
 					break;
@@ -357,7 +357,7 @@ n_object_lift_action_vert( n_nn2 *p, n_sprite *s )
 				break;
 			} else {
 				u32 data = 0; n_bmp_ptr_get( &p->stage->map_move_v, s->x / p->mapchip_unit, s->y / p->mapchip_unit, &data );
-//NSLog( @"%d %d %d", n_bmp_r( data ), n_bmp_g( data ), n_bmp_b( data ) );
+//n_nn2_log( "%d %d %d", n_bmp_r( data ), n_bmp_g( data ), n_bmp_b( data ) );
 				if ( 255 == n_nn2_map_move_data_kind( data ) )
 				{
 					s->jump_state = N_NN2_JUMP_STATE_RISE;
@@ -401,15 +401,15 @@ n_object_lift_action_turn( n_nn2 *p, n_sprite *s )
 	if ( s->invisible ) { return; }
 
 
-	static CGFloat step = 0;
+	static n_type_real step = 0;
 
 	n_type_gfx size = 300;
 
 	n_type_gfx x = 1500;
 	n_type_gfx y =  500;
 
-	CGFloat _s = sin( M_PI * 2 * step );
-	CGFloat _c = cos( M_PI * 2 * step );
+	n_type_real _s = sin( M_PI * 2 * step );
+	n_type_real _c = cos( M_PI * 2 * step );
 
 	if ( _s >= 0 )
 	{

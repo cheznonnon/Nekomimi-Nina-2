@@ -214,9 +214,9 @@ n_nn2_stage_earth_maker( n_nn2 *p, n_nn2_stage *s, int dark )
 
 	if ( s == &n_nn2_stage_6 )
 	{
-		n_nn2_rc_load( @"rc/chip/sand/0" , &bmp, p->scaler );
+		n_nn2_rc_load( "rc/chip/sand/0" , &bmp, p->scaler );
 	} else {
-		n_nn2_rc_load( @"rc/chip/earth/0", &bmp, p->scaler );
+		n_nn2_rc_load( "rc/chip/earth/0", &bmp, p->scaler );
 	}
 
 	if ( dark ) { n_nn2_stage_dark_maker( p, &bmp, dark ); }
@@ -264,7 +264,7 @@ n_nn2_stage_earth_maker( n_nn2 *p, n_nn2_stage *s, int dark )
 }
 
 void
-n_nn2_stage_brick_maker( n_nn2 *p, n_nn2_stage *s, n_bmp *bmp, CGFloat blend, int dark )
+n_nn2_stage_brick_maker( n_nn2 *p, n_nn2_stage *s, n_bmp *bmp, n_type_real blend, int dark )
 {
 
 	u32 color_light = n_bmp_rgb_mac( 150,100, 50 );
@@ -293,7 +293,7 @@ n_nn2_stage_brick_maker( n_nn2 *p, n_nn2_stage *s, n_bmp *bmp, CGFloat blend, in
 	n_type_gfx ff = f * 2;
 
 	n_type_gfx sz = p->mapchip_unit; sz -= ff;
-//NSLog( @"%d", sz );
+//n_nn2_log( "%d", sz );
 
 	n_type_gfx bsx = sz / 2;
 	n_type_gfx bsy = sz / 3;
@@ -311,7 +311,7 @@ n_nn2_stage_brick_maker( n_nn2 *p, n_nn2_stage *s, n_bmp *bmp, CGFloat blend, in
 
 
 	n_nn2_bmp_new( bmp, sz + ff, sz + ff ); //n_bmp_flush( bmp, n_bmp_white );
-//NSLog( @"%d", sz + ff );
+//n_nn2_log( "%d", sz + ff );
 
 	n_bmp_fastcopy( &brick_n, bmp, 0,0,bsx,bsy,   0+f,f );
 	n_bmp_fastcopy( &brick_n, bmp, 0,0,bsx,bsy, bsx+f,f );
@@ -650,13 +650,13 @@ n_nn2_dokan_label_maker( n_nn2 *p )
 void
 n_nn2_treasure_maker( n_nn2 *p )
 {
-//NSLog( @"n_nn2_treasure_maker()" );
+//n_nn2_log( "n_nn2_treasure_maker()" );
 
 	const int degree_base = 90 / N_NN2_TREASURE_BMP_MAX;
 
 
-	n_bmp bmp_body; n_bmp_zero( &bmp_body ); n_nn2_rc_load( @"rc/object/treasure/body", &bmp_body, p->scaler );
-	n_bmp bmp_lid ; n_bmp_zero( &bmp_lid  ); n_nn2_rc_load( @"rc/object/treasure/lid" , &bmp_lid , p->scaler );
+	n_bmp bmp_body; n_bmp_zero( &bmp_body ); n_nn2_rc_load( "rc/object/treasure/body", &bmp_body, p->scaler );
+	n_bmp bmp_lid ; n_bmp_zero( &bmp_lid  ); n_nn2_rc_load( "rc/object/treasure/lid" , &bmp_lid , p->scaler );
 
 //n_nn2_debug_bmp_save( p, &bmp_body );
 

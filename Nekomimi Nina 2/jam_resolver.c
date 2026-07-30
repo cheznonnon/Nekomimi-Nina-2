@@ -73,7 +73,7 @@ n_nn2_jam_resolver_debug( n_nn2 *p, n_sprite *a, n_sprite *b )
 	}
 
 
-	NSLog( @"%s / %s", str_a, str_b );
+	n_nn2_log( "%s / %s", str_a, str_b );
 
 
 	return;
@@ -84,7 +84,7 @@ n_nn2_jam_resolver( n_nn2 *p )
 {
 //return;
 
-	if ( N_NN2_DEBUG_LOOP ) { n_nn2_debug_hangup_detector( @"n_nn2_jam_resolver()" ); }
+	if ( N_NN2_DEBUG_LOOP ) { n_nn2_debug_hangup_detector( "n_nn2_jam_resolver()" ); }
 
 
 	if ( p->object_handheld_sprite != NULL )
@@ -92,7 +92,7 @@ n_nn2_jam_resolver( n_nn2 *p )
 
 		n_sprite *s = p->object_handheld_sprite;
 
-//n_nn2_debug_hangup_detector( @"n_nn2_jam_resolver() : n_object_collision_heading_loop()" );
+//n_nn2_debug_hangup_detector( "n_nn2_jam_resolver() : n_object_collision_heading_loop()" );
 
 		n_posix_loop
 		{//break;
@@ -106,7 +106,7 @@ n_nn2_jam_resolver( n_nn2 *p )
 			p->stage->nina_y++;
 		}
 
-//n_nn2_debug_hangup_detector( @"n_nn2_jam_resolver() : n_object_collision_gravity_loop()" );
+//n_nn2_debug_hangup_detector( "n_nn2_jam_resolver() : n_object_collision_gravity_loop()" );
 
 		if ( p->jump_state == N_NN2_JUMP_STATE_FALL )
 		{
@@ -136,7 +136,7 @@ n_nn2_jam_resolver( n_nn2 *p )
 	}
 
 
-//n_nn2_debug_hangup_detector( @"Main" );
+//n_nn2_debug_hangup_detector( "Main" );
 //return;
 
 	n_sprite *t[ 32 ];
@@ -340,7 +340,7 @@ n_nn2_jam_resolver( n_nn2 *p )
 				( b->collision_ud_detail == N_NN2_OBJECT_COLLISION_OBJECT_NINA_CHASE )
 			)
 			{
-//NSLog( @"%d", b->collision_lr_detail );
+//n_nn2_log( "%d", b->collision_lr_detail );
 				if ( b->option == N_SPRITE_OPTION_BIRD )
 				{
 					n_object_turn( p, b );
@@ -411,10 +411,10 @@ n_nn2_jam_resolver( n_nn2 *p )
 		{
 			if ( b->direction == N_NN2_DIRECTION_LEFT )
 			{
-//NSLog( @"N_NN2_DIRECTION_LEFT" );
+//n_nn2_log( "N_NN2_DIRECTION_LEFT" );
 				b->x = p->stage->nina_x + p->nina_margin_fwrd - b->sx;
 			} else {
-//NSLog( @"N_NN2_DIRECTION_RIGHT" );
+//n_nn2_log( "N_NN2_DIRECTION_RIGHT" );
 				b->x = p->stage->nina_x + p->nina_sx - p->nina_margin_fwrd;
 			}
 	

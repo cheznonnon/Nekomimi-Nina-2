@@ -44,7 +44,7 @@ n_nn2_stage_stand_register( n_nn2 *p, n_sprite *s, BOOL reg_or_unreg )
 
 		if ( s == &p->share->rocks_sprite )
 		{
-//NSLog( @"rocks_sprite : OFF" );
+//n_nn2_log( "rocks_sprite : OFF" );
 			p->share->rocks_sprite.sprite_stand = NULL;
 		} else
 		if ( s == &p->stage->cld_h_0_sprite )
@@ -312,14 +312,14 @@ n_nn2_stage_transition( n_nn2 *p, n_nn2_stage *from, n_nn2_stage *to )
 	n_bmp_ui_transition_circle_y = p->sy / 2;
 
 
-//NSLog( @"%d", p->stage->nina_x );
+//n_nn2_log( "%d", p->stage->nina_x );
 	return;
 }
 
 void
 n_nn2_stage_transition_go( n_nn2 *p, int stage_number )
 {
-//NSLog( @"n_nn2_stage_transition_go() : %d", stage_number );
+//n_nn2_log( "n_nn2_stage_transition_go() : %d", stage_number );
 
 	n_nn2_stage *next = &n_nn2_stage_0;
 
@@ -365,22 +365,18 @@ n_nn2_stage_transition_go( n_nn2 *p, int stage_number )
 
 	if ( p->stage == &n_nn2_stage_0 )
 	{
-//NSLog( @"0" );
 		n_nn2_stage_transition( p, &n_nn2_stage_0, next );
 	} else
 	if ( p->stage == &n_nn2_stage_1 )
 	{
-//NSLog( @"1" );
 		n_nn2_stage_transition( p, &n_nn2_stage_1, next );
 	} else
 	if ( p->stage == &n_nn2_stage_2 )
 	{
-//NSLog( @"2" );
 		n_nn2_stage_transition( p, &n_nn2_stage_2, next );
 	} else
 	if ( p->stage == &n_nn2_stage_3 )
 	{
-//NSLog( @"3" );
 		n_nn2_stage_transition( p, &n_nn2_stage_3, next );
 	} else
 	if ( p->stage == &n_nn2_stage_4 )
@@ -427,7 +423,7 @@ n_nn2_stage_throw_go( n_nn2 *p, n_sprite *s, n_type_gfx x, n_type_gfx y )
 
 
 	int stage_number = n_nn2_map_dokan_stage_number_get_by_position( p, x, y );
-//NSLog( @"%d", stage_number );
+//n_nn2_log( "%d", stage_number );
 
 
 	s->stage_number = stage_number;
@@ -444,7 +440,7 @@ n_nn2_stage_throw_go( n_nn2 *p, n_sprite *s, n_type_gfx x, n_type_gfx y )
 	n_nn2_npc_starting_position( p, n_nn2_stage_number2ptr( s->stage_number ), s );
 
 
-//NSLog( @"Object Warp : X %d Y %d : %d %d %d(No.)", x,y, n_bmp_r( data ), n_bmp_g( data ), n_bmp_b( data ) );
+//n_nn2_log( "Object Warp : X %d Y %d : %d %d %d(No.)", x,y, n_bmp_r( data ), n_bmp_g( data ), n_bmp_b( data ) );
 
 
 	return;
@@ -482,7 +478,7 @@ n_nn2_stage_animation( n_nn2 *p )
 
 	//n_sprite_animation( &p->share->rocks_sprite );
 	p->share->rocks_sprite.index = p->brick_animation_index;
-//NSLog( @"%d %d", p->brick_animation_index, p->share->rocks_sprite.frame );
+//n_nn2_log( "%d %d", p->brick_animation_index, p->share->rocks_sprite.frame );
 
 
 	return;
@@ -498,7 +494,7 @@ n_nn2_stage_share_init( n_nn2 *p )
 	{
 
 		n_bmp bmp; n_bmp_zero( &bmp );
-		n_nn2_rc_load( @"rc/1/chip/weather/0", &bmp, p->scaler );
+		n_nn2_rc_load( "rc/1/chip/weather/0", &bmp, p->scaler );
 
 		n_type_gfx sz = p->mapchip_unit;
 

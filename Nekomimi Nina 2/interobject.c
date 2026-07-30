@@ -137,7 +137,7 @@ n_interobject_collision_lr_detail( n_nn2 *p, n_sprite *obj_a, n_sprite *obj_b, B
 	if ( obj_b->invisible ) { return FALSE; }
 
 
-//if ( obj_a->option == N_SPRITE_OPTION_ROCK ) { NSLog( @"n_interobject_collision_lr_detail()" ); }
+//if ( obj_a->option == N_SPRITE_OPTION_ROCK ) { n_nn2_log( "n_interobject_collision_lr_detail()" ); }
 
 
 	n_type_gfx a_f, a_t;
@@ -204,7 +204,7 @@ n_interobject_collision_detail( n_nn2 *p, n_sprite *a, n_sprite *b )
 		ret = TRUE;
 	}
 
-//NSLog( @"%d %d : %d", ud, lr, ret );
+//n_nn2_log( "%d %d : %d", ud, lr, ret );
 
 
 	return ret;
@@ -482,11 +482,11 @@ n_interobject_collision_gravity_lift( n_nn2 *p )
 
 		if ( n_object_lift_collision_is_hit( p, s, YES ) )
 		{
-//if ( s == &p->stage->rocks_sprite ) { NSLog( @"On" ); }
+//if ( s == &p->stage->rocks_sprite ) { n_nn2_log( "On" ); }
 			ret = s;
 			n_nn2_stage_stand_register( p, s, YES );
 		} else {
-//if ( s == &p->stage->rocks_sprite ) { NSLog( @"Off" ); }
+//if ( s == &p->stage->rocks_sprite ) { n_nn2_log( "Off" ); }
 			n_nn2_stage_stand_register( p, s,  NO );
 		}
 

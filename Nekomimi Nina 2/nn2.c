@@ -5,6 +5,35 @@
 
 
 
+#define n_nn2_log( f, ... ) _n_nn2_log( n_posix_literal( f ), ##__VA_ARGS__ )
+
+void
+_n_nn2_log( const n_posix_char *format, ... )
+{
+
+	n_posix_char str[ 1024 ];
+
+
+	va_list vl; va_start( vl, format );
+
+#ifdef UNICODE
+	n_posix_vsprintf( str, 1024, format, vl );
+#else
+	n_posix_vsprintf( str, format, vl );
+#endif
+
+	va_end( vl );
+
+
+	NSLog( @"%s", str );
+
+
+	return;
+}
+
+
+
+
 #define N_NN2_SOUND_OFF ( 0 )
 #define N_NN2_SOUND_ON  ( 1 )
 
@@ -41,10 +70,10 @@
 #define N_NN2_DEBUG_LOOP FALSE
 
 void
-n_nn2_debug_hangup_detector( NSString *nsstr )
+n_nn2_debug_hangup_detector( n_posix_char *str )
 {
 
-	NSLog( @"%@", nsstr );
+	n_nn2_log( "%s", str );
 
 	return;
 }
@@ -153,14 +182,14 @@ n_nn2_bmp_flush_mixer( n_bmp *bmp, u32 color_mix, n_type_real blend )
 
 
 
-CGFloat
-n_nn2_flowy_effect( CGFloat maxim, CGFloat step )
+n_type_real
+n_nn2_flowy_effect( n_type_real maxim, n_type_real step )
 {
 	return maxim * fabs( sin( 2.0 * M_PI * step ) );
 }
 
 BOOL
-n_nn2_flowy_effect_inc( CGFloat maxim, CGFloat *step, CGFloat boost )
+n_nn2_flowy_effect_inc( n_type_real maxim, n_type_real *step, n_type_real boost )
 {
 
 	(*step) += 0.25 / maxim * boost;
@@ -177,7 +206,7 @@ n_nn2_flowy_effect_inc( CGFloat maxim, CGFloat *step, CGFloat boost )
 
 
 void
-n_nn2_rc_load_raw( NSString *name, n_bmp *bmp )
+n_nn2_rc_load_raw( n_posix_char *name, n_bmp *bmp )
 {
 
 	n_bmp_free( bmp );
@@ -186,7 +215,9 @@ n_nn2_rc_load_raw( NSString *name, n_bmp *bmp )
 	NSBundle *main = [NSBundle mainBundle];
 	if ( main == NULL ) { return; }
 
-	NSString *path = [main pathForResource:name ofType:@"png"];
+	NSString *nsstr = n_mac_str2nsstring( name );
+
+	NSString *path = [main pathForResource:nsstr ofType:@"png"];
 	if ( path == NULL ) { return; }
 
 	NSImage *image = [[NSImage alloc] initWithContentsOfFile:path];
@@ -201,7 +232,7 @@ n_nn2_rc_load_raw( NSString *name, n_bmp *bmp )
 }
 
 void
-n_nn2_rc_load( NSString *name, n_bmp *bmp, int scaler )
+n_nn2_rc_load( n_posix_char *name, n_bmp *bmp, int scaler )
 {
 
 	n_nn2_rc_load_raw( name, bmp );
@@ -237,7 +268,7 @@ n_nn2_rc_load( NSString *name, n_bmp *bmp, int scaler )
 }
 
 void
-n_nn2_rc_load_map( NSString *name, n_bmp *bmp )
+n_nn2_rc_load_map( n_posix_char *name, n_bmp *bmp )
 {
 
 	n_nn2_rc_load_raw( name, bmp );
@@ -579,7 +610,7 @@ typedef struct {
 	BOOL        onoff;
 	n_type_gfx  x, y;
 	n_type_gfx  ox, oy;
-	CGFloat     flowy;
+	n_type_real flowy;
 	u32         timer;
 
 } n_splash;
@@ -692,7 +723,7 @@ typedef struct {
 	n_type_gfx  nina_walk_step;
 
 	BOOL        dash_onoff;
-	CGFloat     dash_float;
+	n_type_real dash_float;
 	u32         dash_timer;
 	int         dash_direction;
 	int         dash_phase;
@@ -708,7 +739,7 @@ typedef struct {
 	BOOL        jump_onoff;
 	int         jump_state;
 	int         jump_state_prv;
-	CGFloat     jump_float;
+	n_type_real jump_float;
 	int         jump_flow;
 	n_type_gfx  jump_vertical_threshold;
 	n_type_gfx  jump_vertical_start_x;
@@ -739,10 +770,10 @@ typedef struct {
 	int         wink_frame;
 	u32         wink_timer;
 
-	CGFloat     global_blend;
-	CGFloat       chip_blend;
-	CGFloat      dokan_blend;
-	CGFloat      dokan_blend_stop;
+	n_type_real global_blend;
+	n_type_real   chip_blend;
+	n_type_real  dokan_blend;
+	n_type_real  dokan_blend_stop;
 
 	n_sprite   *sprite_cur;
 
@@ -1000,7 +1031,7 @@ typedef struct {
 	int         title_phase;
 	n_bmp       title_neko;
 
-	CGFloat     fuwafuwa;
+	n_type_real fuwafuwa;
 
 	n_splash    splash_dash;
 	n_splash    splash_slip;
@@ -1076,18 +1107,18 @@ n_nn2_stage_transfer( n_nn2 *p, n_sprite *s, n_nn2_stage *st )
 		s->invisible    = FALSE;
 		s->stage_number = n_nn2_stage_number_get( st );
 
-//NSLog( @"handheld %d", s->stage_number );
+//n_nn2_log( "handheld %d", s->stage_number );
 		return;
 	}
 /*
 if ( s == &p->share->kuina_sprite )
 {
-NSLog( @"Number %d %d", s->stage_number, n_nn2_stage_number_get( st ) );
+n_nn2_log( "Number %d %d", s->stage_number, n_nn2_stage_number_get( st ) );
 }
 */
 	if ( s->stage_number == n_nn2_stage_number_get( st ) )
 	{
-//NSLog( @"visible" );
+//n_nn2_log( "visible" );
 		s->invisible = FALSE;
 
 #ifdef N_NN2_KUINA_AUTO
@@ -1100,7 +1131,7 @@ NSLog( @"Number %d %d", s->stage_number, n_nn2_stage_number_get( st ) );
 		}
 #endif
 	} else {
-//NSLog( @"invisible" );
+//n_nn2_log( "invisible" );
 		s->invisible = TRUE;
 	}
 
@@ -1189,7 +1220,7 @@ n_object_collision_debug( n_posix_char *label, n_sprite *p )
 	}
 
 
-	NSLog( @"%s : UD %s : LR %s", label, ud, lr );
+	n_nn2_log( "%s : UD %s : LR %s", label, ud, lr );
 
 
 	return;
@@ -1279,7 +1310,7 @@ n_nn2_bmp_draw_internal( n_nn2 *p, n_bmp *bmp, n_type_gfx x, n_type_gfx y, BOOL 
 		} else
 		if ( p->weather_darkmode_onoff )
 		{
-			CGFloat blend = 0.25;
+			n_type_real blend = 0.25;
 			if ( p->stage == &n_nn2_stage_3 ) { blend = 0.125; }
 
 			n_nn2_bmp_flush_mixer_multithread( p, bmp, n_bmp_black, blend );
@@ -1451,14 +1482,14 @@ n_nn2_npc_starting_position( n_nn2 *ptr, n_nn2_stage *stg, n_sprite *spr )
 	if ( spr == NULL ) { return; }
 
 
-//NSLog( @"%d %d", s->x, s->y );
+//n_nn2_log( "%d %d", s->x, s->y );
 
 	// [!] : chick and kuina use this. see n_nn2_stage_throw_go()
 
 	spr->x = spr->starting_x;
 	spr->y = N_OBJECT_BIRDS_Y - 150;
-//NSLog( @"%d %d", spr->x, spr->y );
-//NSLog( @"%d %d", stg->map_sy, stg->map_max_sy );
+//n_nn2_log( "%d %d", spr->x, spr->y );
+//n_nn2_log( "%d %d", stg->map_sy, stg->map_max_sy );
 
 	if ( spr == &ptr->share->bird1_sprite ) { spr->y += spr->sy * 1; } else
 	if ( spr == &ptr->share->bird2_sprite ) { spr->y += spr->sy * 2; } else
@@ -1485,7 +1516,7 @@ n_nn2_map_metrics_reset_mapping( n_nn2 *ptr, n_nn2_stage *stg, n_sprite *spr )
 	n_type_real a = (n_type_real) spr->x / ptr->map_sx_prv;
 	n_type_real b = (n_type_real) stg->map_sx * a;
 
-//NSLog( @"%d %d : %f %f", ptr->map_sx_prv, stg->map_sx, a, b );
+//n_nn2_log( "%d %d : %f %f", ptr->map_sx_prv, stg->map_sx, a, b );
 
 	spr->x = (n_type_gfx) b;
 
@@ -1496,7 +1527,7 @@ n_nn2_map_metrics_reset_mapping( n_nn2 *ptr, n_nn2_stage *stg, n_sprite *spr )
 void
 n_nn2_map_metrics_reset( n_nn2 *p, n_nn2_stage *stg, BOOL is_init )
 {
-//NSLog( @"n_nn2_map_metrics_reset()" );
+//n_nn2_log( "n_nn2_map_metrics_reset()" );
 
 	// [!] : "s" is not "p->stage"
 
@@ -1514,7 +1545,7 @@ n_nn2_map_metrics_reset( n_nn2 *p, n_nn2_stage *stg, BOOL is_init )
 		{
 			p->map_sx_prv = stg->map_sx;
 		}
-//NSLog( @"is_init == NO : %d %d", p->map_sx_prv, s->map_sx );
+//n_nn2_log( "is_init == NO : %d %d", p->map_sx_prv, s->map_sx );
 
 		n_nn2_map_metrics_reset_mapping( p, stg, &p->share->bird1_sprite );
 		n_nn2_map_metrics_reset_mapping( p, stg, &p->share->bird2_sprite );
@@ -1704,35 +1735,35 @@ n_nn2_init_rc( n_nn2 *p )
 	{
 		NSOperation *o = [NSBlockOperation blockOperationWithBlock:^{
 
-		n_nn2_rc_load( @"rc/nina/10", &p->nina_walk_hair_r, p->scaler );
-		n_nn2_rc_load( @"rc/nina/11", &p->nina_walk_hair_s, p->scaler );
-		n_nn2_rc_load( @"rc/nina/24", &p->nina_walk_hair_f, p->scaler );
-		n_nn2_rc_load( @"rc/nina/9" , &p->nina_walk_face  , p->scaler );
-		n_nn2_rc_load( @"rc/nina/28", &p->nina_walk_ear   , p->scaler );
+		n_nn2_rc_load( "rc/nina/10", &p->nina_walk_hair_r, p->scaler );
+		n_nn2_rc_load( "rc/nina/11", &p->nina_walk_hair_s, p->scaler );
+		n_nn2_rc_load( "rc/nina/24", &p->nina_walk_hair_f, p->scaler );
+		n_nn2_rc_load( "rc/nina/9" , &p->nina_walk_face  , p->scaler );
+		n_nn2_rc_load( "rc/nina/28", &p->nina_walk_ear   , p->scaler );
 
-		n_nn2_rc_load( @"rc/nina/6" , &p->nina_blue_body    , p->scaler );
-		n_nn2_rc_load( @"rc/nina/8" , &p->nina_blue_boob    , p->scaler );
-		n_nn2_rc_load( @"rc/nina/7" , &p->nina_blue_hip     , p->scaler );
-		n_nn2_rc_load( @"rc/nina/51", &p->nina_blue_turn    , p->scaler );
-		n_nn2_rc_load( @"rc/nina/52", &p->nina_blue_sleeve_l, p->scaler );
-		n_nn2_rc_load( @"rc/nina/53", &p->nina_blue_sleeve_m, p->scaler );
-		n_nn2_rc_load( @"rc/nina/54", &p->nina_blue_sleeve_r, p->scaler );
+		n_nn2_rc_load( "rc/nina/6" , &p->nina_blue_body    , p->scaler );
+		n_nn2_rc_load( "rc/nina/8" , &p->nina_blue_boob    , p->scaler );
+		n_nn2_rc_load( "rc/nina/7" , &p->nina_blue_hip     , p->scaler );
+		n_nn2_rc_load( "rc/nina/51", &p->nina_blue_turn    , p->scaler );
+		n_nn2_rc_load( "rc/nina/52", &p->nina_blue_sleeve_l, p->scaler );
+		n_nn2_rc_load( "rc/nina/53", &p->nina_blue_sleeve_m, p->scaler );
+		n_nn2_rc_load( "rc/nina/54", &p->nina_blue_sleeve_r, p->scaler );
 
-		n_nn2_rc_load( @"rc/nina/61", &p->nina_pink_body    , p->scaler );
-		n_nn2_rc_load( @"rc/nina/8" , &p->nina_pink_boob    , p->scaler );
-		n_nn2_rc_load( @"rc/nina/62", &p->nina_pink_hip     , p->scaler );
-		n_nn2_rc_load( @"rc/nina/63", &p->nina_pink_turn    , p->scaler );
-		n_nn2_rc_load( @"rc/nina/64", &p->nina_pink_sleeve_l, p->scaler );
-		n_nn2_rc_load( @"rc/nina/65", &p->nina_pink_sleeve_m, p->scaler );
-		n_nn2_rc_load( @"rc/nina/66", &p->nina_pink_sleeve_r, p->scaler );
+		n_nn2_rc_load( "rc/nina/61", &p->nina_pink_body    , p->scaler );
+		n_nn2_rc_load( "rc/nina/8" , &p->nina_pink_boob    , p->scaler );
+		n_nn2_rc_load( "rc/nina/62", &p->nina_pink_hip     , p->scaler );
+		n_nn2_rc_load( "rc/nina/63", &p->nina_pink_turn    , p->scaler );
+		n_nn2_rc_load( "rc/nina/64", &p->nina_pink_sleeve_l, p->scaler );
+		n_nn2_rc_load( "rc/nina/65", &p->nina_pink_sleeve_m, p->scaler );
+		n_nn2_rc_load( "rc/nina/66", &p->nina_pink_sleeve_r, p->scaler );
 
-		n_nn2_rc_load( @"rc/nina/55", &p->nina_swim_blue_body, p->scaler );
-		n_nn2_rc_load( @"rc/nina/56", &p->nina_swim_blue_boob, p->scaler );
-		n_nn2_rc_load( @"rc/nina/57", &p->nina_swim_blue_turn, p->scaler );
+		n_nn2_rc_load( "rc/nina/55", &p->nina_swim_blue_body, p->scaler );
+		n_nn2_rc_load( "rc/nina/56", &p->nina_swim_blue_boob, p->scaler );
+		n_nn2_rc_load( "rc/nina/57", &p->nina_swim_blue_turn, p->scaler );
 
-		n_nn2_rc_load( @"rc/nina/58", &p->nina_swim_pink_body, p->scaler );
-		n_nn2_rc_load( @"rc/nina/59", &p->nina_swim_pink_boob, p->scaler );
-		n_nn2_rc_load( @"rc/nina/60", &p->nina_swim_pink_turn, p->scaler );
+		n_nn2_rc_load( "rc/nina/58", &p->nina_swim_pink_body, p->scaler );
+		n_nn2_rc_load( "rc/nina/59", &p->nina_swim_pink_boob, p->scaler );
+		n_nn2_rc_load( "rc/nina/60", &p->nina_swim_pink_turn, p->scaler );
 
 		// [!] : face maker
 
@@ -1742,9 +1773,9 @@ n_nn2_init_rc( n_nn2 *p )
 		n_bmp_carboncopy( &p->nina_walk_face, &p->nina_walk_wink_2 );
 		n_bmp_carboncopy( &p->nina_walk_face, &p->nina_walk_wink_3 );
 
-		n_bmp wink_1; n_bmp_zero( &wink_1 ); n_nn2_rc_load( @"rc/nina/21", &wink_1, p->scaler );
-		n_bmp wink_2; n_bmp_zero( &wink_2 ); n_nn2_rc_load( @"rc/nina/22", &wink_2, p->scaler );
-		n_bmp wink_3; n_bmp_zero( &wink_3 ); n_nn2_rc_load( @"rc/nina/23", &wink_3, p->scaler );
+		n_bmp wink_1; n_bmp_zero( &wink_1 ); n_nn2_rc_load( "rc/nina/21", &wink_1, p->scaler );
+		n_bmp wink_2; n_bmp_zero( &wink_2 ); n_nn2_rc_load( "rc/nina/22", &wink_2, p->scaler );
+		n_bmp wink_3; n_bmp_zero( &wink_3 ); n_nn2_rc_load( "rc/nina/23", &wink_3, p->scaler );
 
 		n_bmp_flush_transcopy( &wink_1, &p->nina_walk_wink_1 );
 		n_bmp_flush_transcopy( &wink_2, &p->nina_walk_wink_2 );
@@ -1756,14 +1787,14 @@ n_nn2_init_rc( n_nn2 *p )
 
 		n_bmp_carboncopy( &p->nina_walk_wink_1, &p->nina_walk_head );
 
-		n_nn2_rc_load( @"rc/nina/48", &p->nina_walk_neko, p->scaler );
+		n_nn2_rc_load( "rc/nina/48", &p->nina_walk_neko, p->scaler );
 
 
 		// [!] : duck maker
 
 		{
 
-		n_nn2_rc_load( @"rc/nina/38", &p->nina_duck_full_body, p->scaler );
+		n_nn2_rc_load( "rc/nina/38", &p->nina_duck_full_body, p->scaler );
 
 		n_bmp h_r; n_bmp_carboncopy( &p->nina_walk_hair_r, &h_r );
 		n_bmp h_s; n_bmp_carboncopy( &p->nina_walk_hair_s, &h_s );
@@ -1806,7 +1837,7 @@ n_nn2_init_rc( n_nn2 *p )
 
 		{
 
-		n_nn2_rc_load( @"rc/nina/37", &p->nina_duck_half_body, p->scaler );
+		n_nn2_rc_load( "rc/nina/37", &p->nina_duck_half_body, p->scaler );
 
 		n_bmp h_r; n_bmp_carboncopy( &p->nina_walk_hair_r, &h_r );
 		n_bmp h_s; n_bmp_carboncopy( &p->nina_walk_hair_s, &h_s );
@@ -1854,30 +1885,30 @@ n_nn2_init_rc( n_nn2 *p )
 		NSOperation *o = [NSBlockOperation blockOperationWithBlock:^{
 
 
-		n_nn2_rc_load( @"rc/nina/16", &p->nina_walk_arm_f_2, p->scaler );
-		n_nn2_rc_load( @"rc/nina/17", &p->nina_walk_arm_f_1, p->scaler );
-		n_nn2_rc_load( @"rc/nina/18", &p->nina_walk_arm_n  , p->scaler );
-		n_nn2_rc_load( @"rc/nina/19", &p->nina_walk_arm_r_1, p->scaler );
-		n_nn2_rc_load( @"rc/nina/20", &p->nina_walk_arm_r_2, p->scaler );
+		n_nn2_rc_load( "rc/nina/16", &p->nina_walk_arm_f_2, p->scaler );
+		n_nn2_rc_load( "rc/nina/17", &p->nina_walk_arm_f_1, p->scaler );
+		n_nn2_rc_load( "rc/nina/18", &p->nina_walk_arm_n  , p->scaler );
+		n_nn2_rc_load( "rc/nina/19", &p->nina_walk_arm_r_1, p->scaler );
+		n_nn2_rc_load( "rc/nina/20", &p->nina_walk_arm_r_2, p->scaler );
 
-		n_nn2_rc_load( @"rc/nina/12", &p->nina_walk_leg_r_2, p->scaler );
-		n_nn2_rc_load( @"rc/nina/13", &p->nina_walk_leg_r_1, p->scaler );
-		n_nn2_rc_load( @"rc/nina/15", &p->nina_walk_leg_n  , p->scaler );
-		n_nn2_rc_load( @"rc/nina/3" , &p->nina_walk_leg_f_1, p->scaler );
-		n_nn2_rc_load( @"rc/nina/4" , &p->nina_walk_leg_fd1, p->scaler );
-		n_nn2_rc_load( @"rc/nina/2" , &p->nina_walk_leg_f_2, p->scaler );
+		n_nn2_rc_load( "rc/nina/12", &p->nina_walk_leg_r_2, p->scaler );
+		n_nn2_rc_load( "rc/nina/13", &p->nina_walk_leg_r_1, p->scaler );
+		n_nn2_rc_load( "rc/nina/15", &p->nina_walk_leg_n  , p->scaler );
+		n_nn2_rc_load( "rc/nina/3" , &p->nina_walk_leg_f_1, p->scaler );
+		n_nn2_rc_load( "rc/nina/4" , &p->nina_walk_leg_fd1, p->scaler );
+		n_nn2_rc_load( "rc/nina/2" , &p->nina_walk_leg_f_2, p->scaler );
 
 
-		n_nn2_rc_load( @"rc/nina/29", &p->nina_dash_arm_f_2, p->scaler );
-		n_nn2_rc_load( @"rc/nina/30", &p->nina_dash_arm_f_1, p->scaler );
-		n_nn2_rc_load( @"rc/nina/31", &p->nina_dash_arm_n  , p->scaler );
-		n_nn2_rc_load( @"rc/nina/32", &p->nina_dash_arm_r_1, p->scaler );
-		n_nn2_rc_load( @"rc/nina/33", &p->nina_dash_arm_r_2, p->scaler );
+		n_nn2_rc_load( "rc/nina/29", &p->nina_dash_arm_f_2, p->scaler );
+		n_nn2_rc_load( "rc/nina/30", &p->nina_dash_arm_f_1, p->scaler );
+		n_nn2_rc_load( "rc/nina/31", &p->nina_dash_arm_n  , p->scaler );
+		n_nn2_rc_load( "rc/nina/32", &p->nina_dash_arm_r_1, p->scaler );
+		n_nn2_rc_load( "rc/nina/33", &p->nina_dash_arm_r_2, p->scaler );
 
-		n_nn2_rc_load( @"rc/nina/34", &p->nina_dash_leg_f_2, p->scaler );
-		n_nn2_rc_load( @"rc/nina/35", &p->nina_dash_leg_f_1, p->scaler );
-		n_nn2_rc_load( @"rc/nina/12", &p->nina_dash_leg_r_1, p->scaler );
-		n_nn2_rc_load( @"rc/nina/36", &p->nina_dash_leg_r_2, p->scaler );
+		n_nn2_rc_load( "rc/nina/34", &p->nina_dash_leg_f_2, p->scaler );
+		n_nn2_rc_load( "rc/nina/35", &p->nina_dash_leg_f_1, p->scaler );
+		n_nn2_rc_load( "rc/nina/12", &p->nina_dash_leg_r_1, p->scaler );
+		n_nn2_rc_load( "rc/nina/36", &p->nina_dash_leg_r_2, p->scaler );
 
 
 		// [!] : shadow maker
@@ -1915,14 +1946,14 @@ n_nn2_init_rc( n_nn2 *p )
 	{
 		NSOperation *o = [NSBlockOperation blockOperationWithBlock:^{
 
-		n_nn2_rc_load( @"rc/nina/39", &p->nina_jump_leg_1, p->scaler );
-		n_nn2_rc_load( @"rc/nina/40", &p->nina_jump_leg_2, p->scaler );
-		n_nn2_rc_load( @"rc/nina/41", &p->nina_jump_leg_3, p->scaler );
-		n_nn2_rc_load( @"rc/nina/42", &p->nina_jump_leg_t, p->scaler );
-		n_nn2_rc_load( @"rc/nina/43", &p->nina_jump_arm_1, p->scaler );
-		n_nn2_rc_load( @"rc/nina/44", &p->nina_jump_arm_2, p->scaler );
-		n_nn2_rc_load( @"rc/nina/45", &p->nina_suck_arm_1, p->scaler );
-		n_nn2_rc_load( @"rc/nina/46", &p->nina_suck_leg_1, p->scaler );
+		n_nn2_rc_load( "rc/nina/39", &p->nina_jump_leg_1, p->scaler );
+		n_nn2_rc_load( "rc/nina/40", &p->nina_jump_leg_2, p->scaler );
+		n_nn2_rc_load( "rc/nina/41", &p->nina_jump_leg_3, p->scaler );
+		n_nn2_rc_load( "rc/nina/42", &p->nina_jump_leg_t, p->scaler );
+		n_nn2_rc_load( "rc/nina/43", &p->nina_jump_arm_1, p->scaler );
+		n_nn2_rc_load( "rc/nina/44", &p->nina_jump_arm_2, p->scaler );
+		n_nn2_rc_load( "rc/nina/45", &p->nina_suck_arm_1, p->scaler );
+		n_nn2_rc_load( "rc/nina/46", &p->nina_suck_leg_1, p->scaler );
 
 		n_nn2_walk_shadow( &p->nina_jump_leg_1, &p->nina_jump_lgS_1 );
 		n_nn2_walk_shadow( &p->nina_jump_leg_2, &p->nina_jump_lgS_2 );
@@ -1935,11 +1966,11 @@ n_nn2_init_rc( n_nn2 *p )
 	{
 		NSOperation *o = [NSBlockOperation blockOperationWithBlock:^{
 
-		n_nn2_rc_load( @"rc/nina/49", &p->nina_idle_leg1 , p->scaler );
-		n_nn2_rc_load( @"rc/nina/50", &p->nina_idle_leg2 , p->scaler );
-		n_nn2_rc_load( @"rc/nina/14", &p->nina_idle_cliff, p->scaler );
+		n_nn2_rc_load( "rc/nina/49", &p->nina_idle_leg1 , p->scaler );
+		n_nn2_rc_load( "rc/nina/50", &p->nina_idle_leg2 , p->scaler );
+		n_nn2_rc_load( "rc/nina/14", &p->nina_idle_cliff, p->scaler );
 
-		n_nn2_rc_load( @"rc/nina/67", &p->nina_cliff_sweat, p->scaler );
+		n_nn2_rc_load( "rc/nina/67", &p->nina_cliff_sweat, p->scaler );
 
 		}];
 		[p->queue addOperation:o];
@@ -1978,14 +2009,14 @@ n_nn2_init_rc( n_nn2 *p )
 	{
 		NSOperation *o = [NSBlockOperation blockOperationWithBlock:^{
 
-		n_nn2_rc_load( @"rc/object/chick/2" , &p->chick_body  , p->scaler );
-		n_nn2_rc_load( @"rc/object/chick/15", &p->chick_wink  , p->scaler );
-		n_nn2_rc_load( @"rc/object/chick/7" , &p->chick_wing_n, p->scaler );
-		n_nn2_rc_load( @"rc/object/chick/8" , &p->chick_wing_1, p->scaler );
-		n_nn2_rc_load( @"rc/object/chick/9" , &p->chick_wing_2, p->scaler );
-		n_nn2_rc_load( @"rc/object/chick/11", &p->chick_foot_n, p->scaler );
-		n_nn2_rc_load( @"rc/object/chick/12", &p->chick_foot_1, p->scaler );
-		n_nn2_rc_load( @"rc/object/chick/13", &p->chick_foot_2, p->scaler );
+		n_nn2_rc_load( "rc/object/chick/2" , &p->chick_body  , p->scaler );
+		n_nn2_rc_load( "rc/object/chick/15", &p->chick_wink  , p->scaler );
+		n_nn2_rc_load( "rc/object/chick/7" , &p->chick_wing_n, p->scaler );
+		n_nn2_rc_load( "rc/object/chick/8" , &p->chick_wing_1, p->scaler );
+		n_nn2_rc_load( "rc/object/chick/9" , &p->chick_wing_2, p->scaler );
+		n_nn2_rc_load( "rc/object/chick/11", &p->chick_foot_n, p->scaler );
+		n_nn2_rc_load( "rc/object/chick/12", &p->chick_foot_1, p->scaler );
+		n_nn2_rc_load( "rc/object/chick/13", &p->chick_foot_2, p->scaler );
 
 		}];
 		[p->queue addOperation:o];
@@ -1994,13 +2025,13 @@ n_nn2_init_rc( n_nn2 *p )
 	{
 		NSOperation *o = [NSBlockOperation blockOperationWithBlock:^{
 
-		n_nn2_rc_load( @"rc/object/kuina/2" , &p->kuina_body  , p->scaler );
-		n_nn2_rc_load( @"rc/object/kuina/15", &p->kuina_wink  , p->scaler );
-		n_nn2_rc_load( @"rc/object/kuina/7" , &p->kuina_wing_n, p->scaler );
-		n_nn2_rc_load( @"rc/object/kuina/8" , &p->kuina_wing_1, p->scaler );
-		n_nn2_rc_load( @"rc/object/kuina/9" , &p->kuina_wing_2, p->scaler );
-		n_nn2_rc_load( @"rc/object/kuina/11", &p->kuina_foot_n, p->scaler );
-		n_nn2_rc_load( @"rc/object/kuina/12", &p->kuina_foot_1, p->scaler );
+		n_nn2_rc_load( "rc/object/kuina/2" , &p->kuina_body  , p->scaler );
+		n_nn2_rc_load( "rc/object/kuina/15", &p->kuina_wink  , p->scaler );
+		n_nn2_rc_load( "rc/object/kuina/7" , &p->kuina_wing_n, p->scaler );
+		n_nn2_rc_load( "rc/object/kuina/8" , &p->kuina_wing_1, p->scaler );
+		n_nn2_rc_load( "rc/object/kuina/9" , &p->kuina_wing_2, p->scaler );
+		n_nn2_rc_load( "rc/object/kuina/11", &p->kuina_foot_n, p->scaler );
+		n_nn2_rc_load( "rc/object/kuina/12", &p->kuina_foot_1, p->scaler );
 
 		}];
 		[p->queue addOperation:o];
@@ -2009,12 +2040,12 @@ n_nn2_init_rc( n_nn2 *p )
 	{
 		NSOperation *o = [NSBlockOperation blockOperationWithBlock:^{
 
-		n_nn2_rc_load( @"rc/object/bird/2" , &p->bird_body  , p->scaler );
-		n_nn2_rc_load( @"rc/object/bird/4" , &p->bird_wink_1, p->scaler );
-		n_nn2_rc_load( @"rc/object/bird/5" , &p->bird_wink_2, p->scaler );
-		n_nn2_rc_load( @"rc/object/bird/7" , &p->bird_wing_n, p->scaler );
-		n_nn2_rc_load( @"rc/object/bird/8" , &p->bird_wing_1, p->scaler );
-		n_nn2_rc_load( @"rc/object/bird/9" , &p->bird_wing_2, p->scaler );
+		n_nn2_rc_load( "rc/object/bird/2" , &p->bird_body  , p->scaler );
+		n_nn2_rc_load( "rc/object/bird/4" , &p->bird_wink_1, p->scaler );
+		n_nn2_rc_load( "rc/object/bird/5" , &p->bird_wink_2, p->scaler );
+		n_nn2_rc_load( "rc/object/bird/7" , &p->bird_wing_n, p->scaler );
+		n_nn2_rc_load( "rc/object/bird/8" , &p->bird_wing_1, p->scaler );
+		n_nn2_rc_load( "rc/object/bird/9" , &p->bird_wing_2, p->scaler );
 
 		}];
 		[p->queue addOperation:o];
@@ -2025,10 +2056,10 @@ n_nn2_init_rc( n_nn2 *p )
 
 		n_nn2_stage_mountain_maker( p );
 
-		n_nn2_rc_load( @"rc/object/dokan/top" , &p->dokan_bmp_top , p->scaler );
-		n_nn2_rc_load( @"rc/object/dokan/body", &p->dokan_bmp_body, p->scaler );
+		n_nn2_rc_load( "rc/object/dokan/top" , &p->dokan_bmp_top , p->scaler );
+		n_nn2_rc_load( "rc/object/dokan/body", &p->dokan_bmp_body, p->scaler );
 
-		n_nn2_rc_load( @"rc/object/lift/face", &p->lift_bmp_face , p->scaler );
+		n_nn2_rc_load( "rc/object/lift/face", &p->lift_bmp_face , p->scaler );
 //n_nn2_debug_bmp_save( p, &p->lift_bmp_face );
 
 		{
@@ -2046,11 +2077,11 @@ n_nn2_init_rc( n_nn2 *p )
 
 		n_object_kirakira_init( p );
 
-		n_nn2_rc_load( @"rc/object/fish/0", &p->fish_bmp , p->scaler );
+		n_nn2_rc_load( "rc/object/fish/0", &p->fish_bmp , p->scaler );
 
 		n_object_bell_init( p );
 
-		n_nn2_rc_load( @"rc/indicator/nina", &p->nina_indicator, p->scaler );
+		n_nn2_rc_load( "rc/indicator/nina", &p->nina_indicator, p->scaler );
 		n_bmp_flush_antialias( &p->nina_indicator, 1.0 );
 		n_bmp_scaler_lil( &p->nina_indicator, 2 );
 		//n_bmp_resampler( &p->nina_indicator, 0.5, 0.5 );
@@ -2094,9 +2125,9 @@ n_nn2_init_rc( n_nn2 *p )
 
 	//p->nina_margin_fmax = ( p->nina_margin_fwrd + p->nina_margin_fmax ) / 2;
 
-//NSLog( @"%d", p->nina_margin_head );
-//NSLog( @"%d", p->nina_margin_foot );
-//NSLog( @"%d %d", p->nina_margin_rear, p->nina_margin_swim );
+//n_nn2_log( "%d", p->nina_margin_head );
+//n_nn2_log( "%d", p->nina_margin_foot );
+//n_nn2_log( "%d %d", p->nina_margin_rear, p->nina_margin_swim );
 
 
 	p->jump_vertical_threshold = 128 * p->zoom;
@@ -2183,7 +2214,7 @@ n_nn2_draw( n_nn2 *p )
 			static u32 timer = 0;
 			if ( n_bmp_ui_timer( &timer, 12 ) )
 			{
-				static CGFloat value = 0;
+				static n_type_real value = 0;
 
 				p->fuwafuwa = n_nn2_flowy_effect( 8, value );
 
@@ -2258,13 +2289,13 @@ n_nn2_draw( n_nn2 *p )
 		n_type_gfx y = 0;
 
 		n_camerawork_offset_get( p, &x, &y );
-//NSLog( @"%d %d", x, y );
+//n_nn2_log( "%d %d", x, y );
 
 		n_type_gfx size = N_NN2_SPOTLIGHT_SIZE;
 
 		x += p->nina_sx / 2; x -= ( size / 2 );
 		y += p->nina_sy / 2; y -= ( size / 2 );
-//NSLog( @"%d %d", x, y );
+//n_nn2_log( "%d %d", x, y );
 
 		//n_bmp_transcopy( &p->bmp_spotlight, p->canvas, 0,0,size,size, x,y );
 
@@ -2338,7 +2369,7 @@ n_nn2_draw( n_nn2 *p )
 	} //else
 
 
-//NSLog( @"%d", p->transition_phase );
+//n_nn2_log( "%d", p->transition_phase );
 
 
 	n_splash_dash_draw( p, &p->splash_dash );
@@ -2403,8 +2434,8 @@ n_nn2_draw( n_nn2 *p )
 		{
 			n_type_gfx ox = s->x - n_camerawork_x( p );
 			n_type_gfx oy = s->y - n_camerawork_y( p );
-//NSLog( @"%d %d %d %d", s->x, s->y, s->sx, s->sy );
-//NSLog( @"%d %d", ox, oy );
+//n_nn2_log( "%d %d %d %d", s->x, s->y, s->sx, s->sy );
+//n_nn2_log( "%d %d", ox, oy );
 
 			n_bmp_box( p->canvas, ox, oy, s->sx, s->sy, n_bmp_rgb_mac( 255,0,0 ) );
 		}
@@ -2497,7 +2528,7 @@ n_nn2_loop( n_nn2 *p )
 	static BOOL freefall = FALSE;
 	if ( p->jump_state_prv != p->jump_state )
 	{
-//NSLog( @"%d %d", p->jump_state_prv, p->jump_state );
+//n_nn2_log( "%d %d", p->jump_state_prv, p->jump_state );
 
 		if ( p->jump_state_prv == -1 ) { p->jump_state_prv = 1; }
 
@@ -2507,7 +2538,7 @@ n_nn2_loop( n_nn2 *p )
 		} else {
 			freefall = TRUE;
 		}
-//NSLog( @"%d", freefall );
+//n_nn2_log( "%d", freefall );
 
 		if ( freefall == FALSE )
 		{
@@ -2520,7 +2551,7 @@ n_nn2_loop( n_nn2 *p )
 //p->debug_chip_x = tx;
 //p->debug_chip_y = ty;
 			int ret = n_chara_collision_fall_condition( p, tx, ty, 4 );
-//NSLog( @"%d", ret );
+//n_nn2_log( "%d", ret );
 			if ( ret >= 3 ) { freefall = TRUE; }
 		}
 
@@ -2563,7 +2594,7 @@ n_nn2_loop( n_nn2 *p )
 	} else
 	if ( p->dokan_onoff )
 	{
-//NSLog( @"dokan_onoff" );
+//n_nn2_log( "dokan_onoff" );
 //p->debug_pause = TRUE;
 
 		n_chara_action_idle( p, YES );
@@ -2576,7 +2607,7 @@ n_nn2_loop( n_nn2 *p )
 		y /= p->mapchip_unit;
 
 		u32 data = 0; n_bmp_ptr_get( &p->stage->map_dokan, x, y, &data );
-//NSLog( @"%d", n_chip_data_kind( data ) );
+//n_nn2_log( "%d", n_chip_data_kind( data ) );
 
 		if ( N_CHIP_DOKAN_WARP == n_chip_data_kind( data ) )
 		{
@@ -2590,7 +2621,7 @@ n_nn2_loop( n_nn2 *p )
 				u32 data = 0; n_bmp_ptr_get( &p->stage->map_dokan, x, y, &data );
 
 				int stage_number = n_nn2_map_dokan_data_kind( data );
-//NSLog( @"Stage Number : %d", stage_number );
+//n_nn2_log( "Stage Number : %d", stage_number );
 
 				n_nn2_stage_transition_go( p, stage_number );
 
@@ -2602,7 +2633,7 @@ n_nn2_loop( n_nn2 *p )
 	} else
 	if ( p->suck_phase == 1 )
 	{
-//NSLog( @"%d", p->input );
+//n_nn2_log( "%d", p->input );
 
 		if ( p->suck_direction != p->direction )
 		{
@@ -2749,7 +2780,7 @@ n_nn2_loop( n_nn2 *p )
 	} else
 	if ( ( p->jump_onoff )&&( p->jump_state == N_NN2_JUMP_STATE_NONE ) )
 	{
-//static int i = 0; NSLog( @"Jump : %d", i ); i++;
+//static int i = 0; n_nn2_log( "Jump : %d", i ); i++;
 
 
 		if ( n_object_treasure_is_running( p ) ) { p->jump_onoff = FALSE; goto n_goto_idle; }
@@ -2788,10 +2819,10 @@ n_nn2_loop( n_nn2 *p )
 	{
 
 		n_goto_rise:
-//NSLog( @"N_NN2_JUMP_STATE_RISE" );
+//n_nn2_log( "N_NN2_JUMP_STATE_RISE" );
 
 		{
-			CGFloat boost = p->powerup->jump_boost;
+			n_type_real boost = p->powerup->jump_boost;
 			if ( p->fly_phase ) { boost /= 2; }
 
 			if ( n_nn2_flowy_effect_inc( p->nina_sy, &p->jump_float, boost ) )
@@ -2822,7 +2853,7 @@ n_nn2_loop( n_nn2 *p )
 	} else
 	if ( p->jump_state == N_NN2_JUMP_STATE_FALL )
 	{
-//NSLog( @"N_NN2_JUMP_STATE_FALL" );
+//n_nn2_log( "N_NN2_JUMP_STATE_FALL" );
 
 		n_goto_fall:
 
@@ -2929,10 +2960,10 @@ n_nn2_loop( n_nn2 *p )
 				} else {
 					if ( p->input )
 					{
-//NSLog( @"input" );
+//n_nn2_log( "input" );
 						goto n_goto_input;
 					} else {
-//NSLog( @"idle" );
+//n_nn2_log( "idle" );
 						p->jump_vertical_onoff = TRUE;
 
 						p->sprite_cur = &n_chara_sprite_jump;
@@ -2949,7 +2980,7 @@ n_nn2_loop( n_nn2 *p )
 
 			p->draw_center = N_NN2_DRAW_JUMP;
 
-//NSLog( @"%d", p->wall_collision );
+//n_nn2_log( "%d", p->wall_collision );
 
 			if ( p->suck_stop )
 			{
@@ -3008,7 +3039,7 @@ n_nn2_loop( n_nn2 *p )
 	} else
 	if ( p->duck_onoff )
 	{
-//NSLog( @"duck" );
+//n_nn2_log( "duck" );
 
 		n_goto_duck:
 
@@ -3024,7 +3055,7 @@ n_nn2_loop( n_nn2 *p )
 	} else
 	if ( p->unduck_onoff )
 	{
-//NSLog( @"unduck" );
+//n_nn2_log( "unduck" );
 
 		if ( p->dokan_onoff )
 		{
@@ -3058,12 +3089,12 @@ n_nn2_loop( n_nn2 *p )
 
 		if ( p->input & N_NN2_INPUT_L )
 		{
-//NSLog( @"L : %d", p->idle_onoff );
+//n_nn2_log( "L : %d", p->idle_onoff );
 			direction = N_NN2_DIRECTION_LEFT;
 		} else
 		if ( p->input & N_NN2_INPUT_R )
 		{
-//NSLog( @"R : %d", p->idle_onoff );
+//n_nn2_log( "R : %d", p->idle_onoff );
 			direction = N_NN2_DIRECTION_RIGHT;
 		}
 
@@ -3098,7 +3129,7 @@ n_nn2_loop( n_nn2 *p )
 
 	// [!] : Stage 7 : timeup while suck is used
 
-//NSLog( @"%f", p->chip_blend );
+//n_nn2_log( "%f", p->chip_blend );
 	if ( p->chip_blend >= 1.0 )
 	{
 		p->suck_stop  = TRUE;
@@ -3171,11 +3202,11 @@ n_nn2_loop( n_nn2 *p )
 
 	if ( p->stage == &n_nn2_stage_7 )
 	{
-//NSLog( @"%d %d", p->stage->timeup, n_posix_tickcount() );
+//n_nn2_log( "%d %d", p->stage->timeup, n_posix_tickcount() );
 
 		if ( p->timeup < n_posix_tickcount() )
 		{
-//NSLog( @"Timeup : %d %d", p->timeup, n_posix_tickcount() );
+//n_nn2_log( "Timeup : %d %d", p->timeup, n_posix_tickcount() );
 
 			// [!] : set an empty map to falling down
 
@@ -3198,22 +3229,22 @@ n_nn2_loop( n_nn2 *p )
 	n_camerawork_go( p );
 
 
-//NSLog( @"%d %d", p->camera_x, p->camera_y );
+//n_nn2_log( "%d %d", p->camera_x, p->camera_y );
 
-//NSLog( @"%d %d", p->stage->nina_x, p->stage->nina_y );
+//n_nn2_log( "%d %d", p->stage->nina_x, p->stage->nina_y );
 
 //n_sprite_cur_debug( p );
 
-//NSLog( @"Rock : %d : %d %d",  p->share->rocks_sprite.stage_number, p->share->rocks_sprite.x, p->share->rocks_sprite.y );
-//NSLog( @"Rock : %d",  p->share->rocks_sprite.x % p->mapchip_unit );
+//n_nn2_log( "Rock : %d : %d %d",  p->share->rocks_sprite.stage_number, p->share->rocks_sprite.x, p->share->rocks_sprite.y );
+//n_nn2_log( "Rock : %d",  p->share->rocks_sprite.x % p->mapchip_unit );
 
-//NSLog( @"%d", p->stage->camera_first );
+//n_nn2_log( "%d", p->stage->camera_first );
 
-//NSLog( @"%d : %d %d", p->share->kuina_sprite.invisible, p->share->kuina_sprite.x, p->share->kuina_sprite.y );
+//n_nn2_log( "%d : %d %d", p->share->kuina_sprite.invisible, p->share->kuina_sprite.x, p->share->kuina_sprite.y );
 
-//NSLog( @"%d", p->wall_collision );
+//n_nn2_log( "%d", p->wall_collision );
 
-//NSLog( @"%d", p->jump_state );
+//n_nn2_log( "%d", p->jump_state );
 
 
 	return;

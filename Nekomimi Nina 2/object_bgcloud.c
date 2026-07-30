@@ -7,10 +7,10 @@
 
 // internal
 void
-n_nn2_bgcloud_load_single( n_nn2 *p, n_bmp *bmp, CGFloat ratio )
+n_nn2_bgcloud_load_single( n_nn2 *p, n_bmp *bmp, n_type_real ratio )
 {
 
-	n_nn2_rc_load( @"rc/object/bgcloud/0", bmp, p->scaler );
+	n_nn2_rc_load( "rc/object/bgcloud/0", bmp, p->scaler );
 
 	n_type_gfx sx = N_BMP_SX( bmp );
 	n_type_gfx sy = N_BMP_SY( bmp );
@@ -220,7 +220,7 @@ n_nn2_bgcloud_draw_single( n_nn2 *p, n_sprite *spr )
 	if ( spr->invisible ) { return; }
 
 
-	CGFloat prev = p->global_blend;
+	n_type_real prev = p->global_blend;
 	p->global_blend = 0.1;
 
 

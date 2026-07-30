@@ -17,7 +17,7 @@ n_nn2_keystate_get( n_nn2 *p, int id )
 
 		if ( p->gamepad != nil )
 		{
-//NSLog( @"%f", p->gamepad.leftThumbstick.yAxis.value );
+//n_nn2_log( "%f", p->gamepad.leftThumbstick.yAxis.value );
 			ret |= p->gamepad.dpad.down.pressed;
 			if ( p->gamepad.leftThumbstick.yAxis.value == 1.0 )
 			{
@@ -31,7 +31,7 @@ n_nn2_keystate_get( n_nn2 *p, int id )
 
 		if ( p->gamepad != nil )
 		{
-//NSLog( @"%f", p->gamepad.leftThumbstick.yAxis.value );
+//n_nn2_log( "%f", p->gamepad.leftThumbstick.yAxis.value );
 			ret |= p->gamepad.dpad.down.pressed;
 			if ( p->gamepad.leftThumbstick.yAxis.value == -1.0 )
 			{
@@ -105,7 +105,7 @@ n_nn2_input_event_lr( n_nn2 *p )
 
 	if ( n_nn2_keystate_get( p, N_MAC_KEYCODE_ARROW_LEFT ) )
 	{
-//NSLog( @"Left" );
+//n_nn2_log( "Left" );
 		p->input |=  N_NN2_INPUT_L;
 	} else {
 		p->input &= ~N_NN2_INPUT_L;
@@ -113,7 +113,7 @@ n_nn2_input_event_lr( n_nn2 *p )
 
 	if ( n_nn2_keystate_get( p, N_MAC_KEYCODE_ARROW_RIGHT ) )
 	{
-//NSLog( @"Right" );
+//n_nn2_log( "Right" );
 		p->input |=  N_NN2_INPUT_R;
 	} else {
 		p->input &= ~N_NN2_INPUT_R;
@@ -199,7 +199,7 @@ n_nn2_input_event( n_nn2 *p )
 	} else
 	if ( n_nn2_input_event_lr( p ) )
 	{
-//NSLog( @"%d", p->input );
+//n_nn2_log( "%d", p->input );
 
 		// [Needed] : skip zero input : important for brake
 
@@ -208,16 +208,16 @@ n_nn2_input_event( n_nn2 *p )
 
 		if ( ( p->input & N_NN2_INPUT_L )&&( p->input & N_NN2_INPUT_R ) )
 		{
-//NSLog( @"Simul" );
+//n_nn2_log( "Simul" );
 			// [!] : keyboard only : use previous one
 		} else
 		if ( p->input & N_NN2_INPUT_L )
 		{
-//NSLog( @"Left : %d : %d", p->direction, p->dash_direction );
+//n_nn2_log( "Left : %d : %d", p->direction, p->dash_direction );
 
 			if ( ( p->jump_reverse_onoff == FALSE )&&( p->jump_onoff ) )
 			{
-//NSLog( @"L : jump" );
+//n_nn2_log( "L : jump" );
 				if ( p->jump_direction == N_NN2_DIRECTION_NONE ) { p->jump_direction = N_NN2_DIRECTION_LEFT; }
 				if ( p->jump_direction != N_NN2_DIRECTION_LEFT ) { p->input = 0; }
 			} else
@@ -229,7 +229,7 @@ n_nn2_input_event( n_nn2 *p )
 			{
 				if ( p->dash_direction == N_NN2_DIRECTION_RIGHT )
 				{
-//NSLog( @"Left Brake" );
+//n_nn2_log( "Left Brake" );
 					if ( ( last_input + 200 ) > n_posix_tickcount() )
 					{
 						n_nn2_input_event_brake( p );
@@ -243,11 +243,11 @@ n_nn2_input_event( n_nn2 *p )
 		} else
 		if ( p->input & N_NN2_INPUT_R )
 		{
-//NSLog( @"Right" );
+//n_nn2_log( "Right" );
 
 			if ( ( p->jump_reverse_onoff == FALSE )&&( p->jump_onoff ) )
 			{
-//NSLog( @"R : jump" );
+//n_nn2_log( "R : jump" );
 				if ( p->jump_direction == N_NN2_DIRECTION_NONE  ) { p->jump_direction = N_NN2_DIRECTION_RIGHT; }
 				if ( p->jump_direction != N_NN2_DIRECTION_RIGHT ) { p->input = 0; }
 			} else
@@ -259,7 +259,7 @@ n_nn2_input_event( n_nn2 *p )
 			{
 				if ( p->dash_direction == N_NN2_DIRECTION_LEFT )
 				{
-//NSLog( @"Right Brake" );
+//n_nn2_log( "Right Brake" );
 					if ( ( last_input + 200 ) > n_posix_tickcount() )
 					{
 						n_nn2_input_event_brake( p );
@@ -361,7 +361,7 @@ n_nn2_input_event( n_nn2 *p )
 		p->dash_onoff = TRUE;
 
 	} else {
-//NSLog( @"Dash Off" );
+//n_nn2_log( "Dash Off" );
 
 		if ( p->dash_onoff )
 		{
@@ -438,7 +438,7 @@ n_nn2_input_event( n_nn2 *p )
 
 	//if ( 0 )
 	{
-//NSLog( @"%d", p->direction );
+//n_nn2_log( "%d", p->direction );
 
 		if ( p->jump_state )
 		{
@@ -449,7 +449,7 @@ n_nn2_input_event( n_nn2 *p )
 		{
 			if ( p->turn_direction != p->direction )
 			{
-//NSLog( @"Turned" );
+//n_nn2_log( "Turned" );
 				p->turn_onoff = TRUE;
 				n_sprite_rewind( &n_chara_sprite_turn );
 			}
@@ -459,7 +459,7 @@ n_nn2_input_event( n_nn2 *p )
 	}
 
 
-//NSLog( @"%d", p->input );
+//n_nn2_log( "%d", p->input );
 	return;
 }
 

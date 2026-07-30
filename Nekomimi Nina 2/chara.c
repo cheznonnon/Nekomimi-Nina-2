@@ -19,39 +19,39 @@ n_sprite_cur_debug( n_nn2 *p )
 
 	if ( p->sprite_cur == &n_chara_sprite_idle )
 	{
-		NSLog( @"idle" );
+		n_nn2_log( "idle" );
 	} else
 	if ( p->sprite_cur == &n_chara_sprite_walk )
 	{
-		NSLog( @"walk" );
+		n_nn2_log( "walk" );
 	} else
 	if ( p->sprite_cur == &n_chara_sprite_dash )
 	{
-		NSLog( @"dash" );
+		n_nn2_log( "dash" );
 	} else
 	if ( p->sprite_cur == &n_chara_sprite_slip )
 	{
-		NSLog( @"slip" );
+		n_nn2_log( "slip" );
 	} else
 	if ( p->sprite_cur == &n_chara_sprite_duck )
 	{
-		NSLog( @"duck" );
+		n_nn2_log( "duck" );
 	} else
 	if ( p->sprite_cur == &n_chara_sprite_unduck )
 	{
-		NSLog( @"unduck" );
+		n_nn2_log( "unduck" );
 	} else
 	if ( p->sprite_cur == &n_chara_sprite_jump )
 	{
-		NSLog( @"jump" );
+		n_nn2_log( "jump" );
 	} else
 	if ( p->sprite_cur == &n_chara_sprite_land )
 	{
-		NSLog( @"land" );
+		n_nn2_log( "land" );
 	} else
 	if ( p->sprite_cur == &n_chara_sprite_suck )
 	{
-		NSLog( @"suck" );
+		n_nn2_log( "suck" );
 	} //else
 
 
@@ -71,7 +71,7 @@ n_chara_bmp_copy_all( n_nn2 *p, n_bmp *f, n_bmp *t, n_type_gfx ox, n_type_gfx oy
 
 	if ( nina_dokan_onoff )
 	{
-//NSLog( @"%d %d %d", bmpsy, oy, p->dokan_disappear_offset );
+//n_nn2_log( "%d %d %d", bmpsy, oy, p->dokan_disappear_offset );
 
 		bmpsy -= p->dokan_disappear_offset;
 	}
@@ -236,7 +236,7 @@ n_chara_bmp_copy_grabbable( n_nn2 *p, n_bmp *f, n_bmp *t, n_type_gfx ox, n_type_
 n_sprite_single*
 n_chara_get( n_nn2 *p )
 {
-//NSLog( @"%d", p->sprite_cur->frame );
+//n_nn2_log( "%d", p->sprite_cur->frame );
 
 	if ( p->sprite_cur->frame >= p->sprite_cur->obj[ p->sprite_cur->index ].frame_interval )
 	{
@@ -256,7 +256,7 @@ n_chara_get( n_nn2 *p )
 n_sprite_single*
 n_chara_get_with_interval( n_nn2 *p, int interval )
 {
-//NSLog( @"%d", p->sprite_cur->frame );
+//n_nn2_log( "%d", p->sprite_cur->frame );
 
 	if ( p->sprite_cur->frame >= interval )
 	{
@@ -276,7 +276,7 @@ n_chara_get_with_interval( n_nn2 *p, int interval )
 n_sprite_single*
 n_chara_get_once( n_nn2 *p )
 {
-//NSLog( @"%d", p->sprite_cur->frame );
+//n_nn2_log( "%d", p->sprite_cur->frame );
 
 	if ( p->sprite_cur->frame >= p->sprite_cur->obj[ p->sprite_cur->index ].frame_interval )
 	{
@@ -1741,7 +1741,7 @@ n_chara_jump_init( n_nn2 *p )
 void
 n_chara_jump_draw( n_nn2 *p )
 {
-//NSLog( @"%d", p->object_handheld_onoff );
+//n_nn2_log( "%d", p->object_handheld_onoff );
 
 
 	n_bmp *b = &p->bmp_shared; n_bmp_flush( b, n_bmp_black_invisible );
@@ -2366,7 +2366,7 @@ n_chara_action_move( n_nn2 *p, int direction, BOOL is_dash )
 void
 n_chara_action_jump_lr( n_nn2 *p )
 {
-//NSLog( @"%d", p->input );
+//n_nn2_log( "%d", p->input );
 //return;
 
 	if ( ( p->fly_phase )||( p->swim_onoff ) )
@@ -2393,11 +2393,11 @@ n_chara_action_jump_lr( n_nn2 *p )
 
 			n_type_gfx prv = p->nina_walk_step;
 
-//NSLog( @"Dash : %d", p->dash_onoff );
+//n_nn2_log( "Dash : %d", p->dash_onoff );
 
 			if ( p->dash_onoff == FALSE )
 			{
-//NSLog( @"%f", sqrt( 2 ) );
+//n_nn2_log( "%f", sqrt( 2 ) );
 				p->nina_walk_step = p->powerup->jump_lr_walk;
 			}
 

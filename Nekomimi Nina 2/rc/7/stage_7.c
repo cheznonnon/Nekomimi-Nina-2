@@ -22,8 +22,8 @@ n_nn2_stage_7_timeup_ui( n_nn2 *p )
 	n_bmp_ui_progressbar_animation          = N_BMP_UI_PROGRESSBAR_ANIMATION_ON_DOWN;
 	n_bmp_ui_progressbar_animation_interval = 20;
 
-	CGFloat r;
-	CGFloat d = p->timeup - n_posix_tickcount();
+	n_type_real r;
+	n_type_real d = p->timeup - n_posix_tickcount();
 
 	if ( p->timeup_mode == 0 )
 	{
@@ -40,7 +40,7 @@ n_nn2_stage_7_timeup_ui( n_nn2 *p )
 	} else {
 		r = 1.0;
 	}
-//NSLog( @"%f", r );
+//n_nn2_log( "%f", r );
 
 	p->chip_blend = p->dokan_blend = 1.0 - sqrt( r );
 
@@ -67,11 +67,11 @@ n_nn2_stage_7_init( n_nn2 *p )
 
 	// [!] : Map
 
-	n_nn2_rc_load_map( @"rc/7/map/0" , &s->map        );
-	n_nn2_rc_load_map( @"rc/7/map/1" , &s->map_queue  );
-	n_nn2_rc_load_map( @"rc/7/map/2" , &s->map_dokan  );
-	n_nn2_rc_load_map( @"rc/7/map/10", &s->map_timeup );
-	n_nn2_rc_load_map( @"rc/7/map/15", &s->map_bell   );
+	n_nn2_rc_load_map( "rc/7/map/0" , &s->map        );
+	n_nn2_rc_load_map( "rc/7/map/1" , &s->map_queue  );
+	n_nn2_rc_load_map( "rc/7/map/2" , &s->map_dokan  );
+	n_nn2_rc_load_map( "rc/7/map/10", &s->map_timeup );
+	n_nn2_rc_load_map( "rc/7/map/15", &s->map_bell   );
 
 	n_bmp_new( &s->map_label, N_BMP_SX( &s->map ), N_BMP_SY( &s->map ) );
 
@@ -82,7 +82,7 @@ n_nn2_stage_7_init( n_nn2 *p )
 
 	// [!] : Chips
 
-	n_nn2_rc_load( @"rc/chip/rainbow/rainbow_round", &p->bmp_rainbow, p->scaler );
+	n_nn2_rc_load( "rc/chip/rainbow/rainbow_round", &p->bmp_rainbow, p->scaler );
 
 	n_nn2_weather_change( p, s, p->weather_hour );
 
@@ -166,8 +166,8 @@ n_nn2_stage_7_reset( n_nn2 *p )
 
 	// [!] : for timeout feature
 
-	n_nn2_rc_load_map( @"rc/7/map/0", &s->map       );
-	n_nn2_rc_load_map( @"rc/7/map/2", &s->map_dokan );
+	n_nn2_rc_load_map( "rc/7/map/0", &s->map       );
+	n_nn2_rc_load_map( "rc/7/map/2", &s->map_dokan );
 
 	n_nn2_map_metrics_reset( p, s, NO );
 

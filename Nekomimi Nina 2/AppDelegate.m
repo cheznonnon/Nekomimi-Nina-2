@@ -24,7 +24,7 @@
 
 - (void) keyDown : (NSEvent*) event
 {
-//NSLog( @"Subclass : Key Code = %d : Chars %@", event.keyCode, event.characters );
+//n_nn2_log( "Subclass : Key Code = %d : Chars %@", event.keyCode, event.characters );
 
 	if ( event.keyCode == N_MAC_KEYCODE_RETURN )
 	{
@@ -65,12 +65,12 @@
 
 - (void)awakeFromNib
 {
-//NSLog( @"awakeFromNib 1" );
+//n_nn2_log( "awakeFromNib 1" );
 
 	n_mac_image_window = _window;
 	n_gdi_scale_factor = n_mac_image_window.backingScaleFactor;
 
-//if ( _window == nil ) { NSLog( @"nil" ); }
+//if ( _window == nil ) { n_nn2_log( "nil" ); }
 
 
 	[[NSNotificationCenter defaultCenter]
@@ -120,7 +120,7 @@
 	[_n_game n_launch];
 
 
-//NSLog( @"awakeFromNib 2" );
+//n_nn2_log( "awakeFromNib 2" );
 }
 
 
@@ -128,7 +128,7 @@
 
 - (void) windowWillClose:(NSNotification *)notification
 {
-//NSLog( @"windowWillClose" );
+//n_nn2_log( "windowWillClose" );
 
 	NSWindow *window = notification.object;
 	if ( window == self.window )
@@ -142,12 +142,12 @@
 
 - (void)applicationWillFinishLaunching:(NSNotification *)aNotification
 {
-//NSLog( @"applicationWillFinishLaunching" );
+//n_nn2_log( "applicationWillFinishLaunching" );
 }
 
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification
 {
-//NSLog( @"applicationDidFinishLaunching" );
+//n_nn2_log( "applicationDidFinishLaunching" );
 
 	[_n_game n_game_start];
 
@@ -165,7 +165,7 @@
 
 
 - (IBAction)n_nn2_menu_readme:(id)sender {
-//NSLog( @"n_nn2_menu_readme" );
+//n_nn2_log( "n_nn2_menu_readme" );
 
 	NSString *helpFilePath = [[NSBundle mainBundle] pathForResource:@"nn2" ofType:@"html"];
 	NSURL    *helpFileURL  = [NSURL fileURLWithPath:helpFilePath];

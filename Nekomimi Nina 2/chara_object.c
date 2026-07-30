@@ -62,7 +62,7 @@ n_chara_object_collision_ud_detail( n_nn2 *p, n_sprite *s, BOOL is_inner )
 	BOOL ret_f = ( ( t >= u )&&( t <= d ) );
 	BOOL ret_t = ( ( f >= u )&&( f <= d ) );
 
-//if ( s == &p->share->debug_move ) { NSLog( @"%d %d : %d : %d %d", ret_f, ret_t, t, u, d ); }
+//if ( s == &p->share->debug_move ) { n_nn2_log( "%d %d : %d : %d %d", ret_f, ret_t, t, u, d ); }
 
 	if ( ( ret_f )&&( ret_t ) )
 	{
@@ -179,7 +179,7 @@ n_chara_object_collision_lr_detail( n_nn2 *p, n_sprite *s, BOOL is_inner, BOOL i
 		r -= p->nina_margin_fwrd;
 	}
 
-//NSLog( @"%d : Obj %d :%d : Nina %d %d", p->stage->map_sx, f, t, l, r );
+//n_nn2_log( "%d : Obj %d :%d : Nina %d %d", p->stage->map_sx, f, t, l, r );
 
 
 	s->collision_lr_detail = n_chara_object_collision_lr_detail_engine( p, s, f, t, l, r );
@@ -233,7 +233,7 @@ n_chara_object_collision_detail( n_nn2 *p, n_sprite *s )
 	BOOL ud = n_chara_object_collision_ud_detail( p, s, NO      );// if ( ud == FALSE ) { return FALSE; }
 	BOOL lr = n_chara_object_collision_lr_detail( p, s, NO, YES );
 
-//NSLog( @"%d %d", ud, lr );
+//n_nn2_log( "%d %d", ud, lr );
 
 	if ( ( ud )&&( lr ) )
 	{

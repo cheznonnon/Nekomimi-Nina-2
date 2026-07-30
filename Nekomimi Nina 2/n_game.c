@@ -94,7 +94,7 @@ static NonnonGame *n_nn2_global = NULL;
 
 - (instancetype)initWithCoder:(NSCoder *)coder
 {
-//NSLog( @"initWithCoder : 1" );
+//n_nn2_log( "initWithCoder : 1" );
 
 	self = [super initWithCoder:coder];
 	if ( self )
@@ -121,7 +121,7 @@ static NonnonGame *n_nn2_global = NULL;
 	}
 
 
-//NSLog( @"initWithCoder : 2" );
+//n_nn2_log( "initWithCoder : 2" );
 
 	return self;
 }
@@ -145,7 +145,7 @@ static NonnonGame *n_nn2_global = NULL;
 
 - (void) n_timer_method_launch
 {
-//NSLog( @"n_timer_method_launch" );
+//n_nn2_log( "n_timer_method_launch" );
 
 	n_mac_timer_init( self, @selector( n_timer_method1 ), 1 );
 	n_mac_timer_init( self, @selector( n_timer_method2 ), 1 );
@@ -157,7 +157,7 @@ static NonnonGame *n_nn2_global = NULL;
 
 - (void) n_DidConnectNotification:(NSNotification *)notification
 {
-//NSLog( @"n_DidConnectNotification" );
+//n_nn2_log( "n_DidConnectNotification" );
 
 	nn2.gamepad = n_mac_gamepad_init();
 
@@ -165,7 +165,7 @@ static NonnonGame *n_nn2_global = NULL;
 
 - (void) n_DidDisconnectNotification:(NSNotification *)notification
 {
-//NSLog( @"n_DidDisconnectNotification" );
+//n_nn2_log( "n_DidDisconnectNotification" );
 
 	nn2.gamepad = nil;
 
@@ -218,7 +218,7 @@ static NonnonGame *n_nn2_global = NULL;
 
 - (void) n_timer_method1
 {
-//NSLog( @"n_timer_method" );
+//n_nn2_log( "n_timer_method" );
 
 
 	n_nn2 *p = &nn2;
@@ -226,7 +226,7 @@ static NonnonGame *n_nn2_global = NULL;
 	//N_BMP_PTR( &p->canvas_main ) = (void*) [p->rep bitmapData];
 
 
-//NSLog( @"%d", p->title_phase );
+//n_nn2_log( "%d", p->title_phase );
 
 
 	// [!] : n_timer_method is called while inactive window
@@ -238,7 +238,7 @@ static NonnonGame *n_nn2_global = NULL;
 
 		if ( bgm_onoff )
 		{
-//NSLog( @"1" );
+//n_nn2_log( "1" );
 			bgm_onoff = FALSE;
 			n_nn2_sound_bgm_volume( p, 0 );
 		}
@@ -251,7 +251,7 @@ static NonnonGame *n_nn2_global = NULL;
 			bgm_onoff = TRUE;
 			if ( p->title_phase == 0 )
 			{
-//NSLog( @"2" );
+//n_nn2_log( "2" );
 				n_nn2_sound_bgm_volume( p, 0.5 );
 			}
 		}
@@ -356,12 +356,12 @@ static NonnonGame *n_nn2_global = NULL;
 		);
 		if ( ret )
 		{
-//NSLog( @"phase 2" );
+//n_nn2_log( "phase 2" );
 			p->transition_phase = 2;
 
 			n_nn2_sound_bgm_stop( p );
 		} else {
-			CGFloat volume = 0.5 - ( 0.5 * ( p->transition_percent / 100 ) );
+			n_type_real volume = 0.5 - ( 0.5 * ( p->transition_percent / 100 ) );
 			n_nn2_sound_bgm_volume( p, volume );
 		}
 
@@ -384,7 +384,7 @@ static NonnonGame *n_nn2_global = NULL;
 		);
 		if ( ret )
 		{
-//NSLog( @"phase done" );
+//n_nn2_log( "phase done" );
 			n_bmp_free( &p->transition_bmp_old );
 			n_bmp_free( &p->transition_bmp_mid );
 			n_bmp_free( &p->transition_bmp_new );
@@ -480,15 +480,15 @@ static NonnonGame *n_nn2_global = NULL;
 }
 
 - (BOOL) isOpaque {
-//NSLog( @" isOpaque " );
+//n_nn2_log( " isOpaque " );
 	return NO;
 }
 
 - (void)drawRect:(NSRect)rect
 {
-//NSLog( @"drawRect" );
+//n_nn2_log( "drawRect" );
 
-//NSLog( @"%f %f", rect.size.width, rect.size.height );
+//n_nn2_log( "%f %f", rect.size.width, rect.size.height );
 
 //n_mac_draw_box( [NSColor blackColor], n_rect );
 
@@ -532,21 +532,21 @@ static NonnonGame *n_nn2_global = NULL;
 
 - (BOOL)acceptsFirstResponder
 {
-//NSLog(@"acceptsFirstResponder");
+//n_nn2_log( "acceptsFirstResponder" );
 
 	return YES;
 }
 
 - (BOOL)becomeFirstResponder
 {
-//NSLog(@"becomeFirstResponder");
+//n_nn2_log( "becomeFirstResponder" );
 
         return YES;
 }
 
 - (void) keyDown : (NSEvent*) event
 {
-//NSLog( @"Key Code = %d : Chars %@", event.keyCode, event.characters );
+//n_nn2_log( "Key Code = %d : Chars %@", event.keyCode, event.characters );
 
 	// [x] : you cannot combine between alphabet keys and arrow keys like X + Left
 

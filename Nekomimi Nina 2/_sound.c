@@ -96,7 +96,7 @@ n_nn2_bgm_rewind( n_nn2_bgm *p )
 }
 
 void
-n_nn2_bgm_volume( n_nn2_bgm *p, CGFloat zero_one )
+n_nn2_bgm_volume( n_nn2_bgm *p, n_type_real zero_one )
 {
 
 	if ( N_NN2_SOUND_ONOFF == FALSE ) { return; }
@@ -228,7 +228,6 @@ n_nn2_sound_effect_play( int id )
 	} else
 	if ( id == N_NN2_SOUND_BRAKE )
 	{
-//NSLog( @"!" );
 		n_nn2_sound_play( n_nn2_sound_brake );
 	} else
 	if ( id == N_NN2_SOUND_HIPDROP )
@@ -331,7 +330,7 @@ n_nn2_sound_bgm_stop( n_nn2 *p )
 }
 
 void
-n_nn2_sound_bgm_volume( n_nn2 *p, CGFloat volume )
+n_nn2_sound_bgm_volume( n_nn2 *p, n_type_real volume )
 {
 
 	if ( p->stage == &n_nn2_stage_0 )

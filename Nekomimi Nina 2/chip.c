@@ -22,11 +22,11 @@ n_nn2_map_dokan_stage_number( n_nn2 *p, int stage_number )
 #ifdef N_NN2_STAGE_SHUFFLE
 		//stage_number = 2 + n_random_range( 4 );
 		stage_number = p->dokan_stage_number_shuffle;
-//NSLog( @"Shuffle" );
+//n_nn2_log( "Shuffle" );
 #else
 		stage_number = 2;
 #endif
-//NSLog( @"Stage Random : %d", stage_number );
+//n_nn2_log( "Stage Random : %d", stage_number );
 	}
 
 
@@ -40,7 +40,7 @@ n_nn2_map_dokan_stage_number_get_by_position( n_nn2 *p, n_type_gfx x, n_type_gfx
 	u32 data = 0; n_bmp_ptr_get( &p->stage->map_dokan, x, y, &data );
 
 	int stage_number = n_nn2_map_dokan_stage_number( p, n_nn2_map_dokan_data_kind( data ) );
-//NSLog( @"%d", stage_number );
+//n_nn2_log( "%d", stage_number );
 
 	return stage_number;
 }
@@ -146,7 +146,7 @@ n_chip_init( n_nn2 *p, n_nn2_stage *s )
 	n_type_gfx msy = N_BMP_SY( &s->map );
 
 	n_chip_new( s, msx, msy );
-//NSLog( @"%d %d", msx, msy );
+//n_nn2_log( "%d %d", msx, msy );
 
 
 	n_type_gfx x = 0;
@@ -981,7 +981,7 @@ n_chip_dokan_label_get( n_nn2 *p, n_type_gfx mx, n_type_gfx my )
 
 	u32 d1 = n_bmp_black; n_bmp_ptr_get( &p->stage->map_label, mx+1, my, &d1 );
 	u32 d2 = n_bmp_black; n_bmp_ptr_get( &p->stage->map_label, mx+2, my, &d2 );
-//NSLog( @"%x %x", d1, d2 );
+//n_nn2_log( "%x %x", d1, d2 );
 
 //n_bmp_ptr_set( &p->stage->map_label, mx+1, my, n_bmp_rgb_mac( 255,0,0 ) );
 //n_bmp_ptr_set( &p->stage->map_label, mx+2, my, n_bmp_rgb_mac( 255,0,0 ) );
@@ -1020,7 +1020,7 @@ n_chip_draw_dokan_single( n_nn2 *p, n_bmp *bmp, n_type_gfx x, n_type_gfx y )
 	n_type_gfx cx = ( x * p->mapchip_unit ) - n_camerawork_x( p );
 	n_type_gfx cy = ( y * p->mapchip_unit ) - n_camerawork_y( p );
 
-	CGFloat blend = p->global_blend;
+	n_type_real blend = p->global_blend;
 
 	if ( p->dokan_blend_stop == -1 )
 	{
@@ -1068,7 +1068,7 @@ n_chip_pass_thru_go( n_nn2 *p, n_type_gfx mx, n_type_gfx my )
 	return;
 }
 
-CGFloat
+n_type_real
 n_chip_pass_thru_blend( n_nn2 *p, n_type_gfx mx, n_type_gfx my )
 {
 
@@ -1091,7 +1091,7 @@ n_chip_pass_thru_blend( n_nn2 *p, n_type_gfx mx, n_type_gfx my )
 	}
 
 
-	return 1.0 - ( (CGFloat) d / 255 );
+	return 1.0 - ( (n_type_real) d / 255 );
 }
 
 void
@@ -1162,8 +1162,8 @@ n_chip_draw_dokan( n_nn2 *p )
 			if ( n_chip_dokan_label_get( p, x, y ) )
 			{
 				int stage_number = n_nn2_map_dokan_stage_number_get_by_position( p, x+1, y );
-//NSLog( @"%d", stage_number );
-//CGFloat u = p->mapchip_unit; p->debug_rect = NSMakeRect( (x+1)*u, y*u, u, u ); n_nn2_debug_rect( p );
+//n_nn2_log( "%d", stage_number );
+//n_type_real u = p->mapchip_unit; p->debug_rect = NSMakeRect( (x+1)*u, y*u, u, u ); n_nn2_debug_rect( p );
 
 				if ( p->stage == &n_nn2_stage_1 )
 				{
@@ -1498,7 +1498,7 @@ n_chip_draw( n_nn2 *p )
 			n_type_gfx ox = 0;
 			n_type_gfx oy = 0;
 
-			CGFloat blend = 0.0;
+			n_type_real blend = 0.0;
 
 			if ( spr == NULL )
 			{
@@ -1649,7 +1649,7 @@ n_chip_draw( n_nn2 *p )
 void
 n_chip_debug_draw( n_nn2 *p )
 {
-//NSLog( @"n_chip_debug_draw()" );
+//n_nn2_log( "n_chip_debug_draw()" );
 
 	n_type_gfx camera_x = n_camerawork_x( p );
 	n_type_gfx camera_y = n_camerawork_y( p );

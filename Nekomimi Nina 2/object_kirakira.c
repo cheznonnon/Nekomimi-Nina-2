@@ -140,7 +140,7 @@ n_object_kirakira_init( n_nn2 *p )
 
 	n_type_gfx sx = 32;//p->mapchip_unit;
 	n_type_gfx sy = 32;//p->mapchip_unit;
-//NSLog( @"%d %d", sx, sy );
+//n_nn2_log( "%d %d", sx, sy );
 
 	n_object_kirakira_bmp( &p->kirakira_bmp_1, sx / 2, sy / 2, n_bmp_white_invisible, n_bmp_white );
 	n_object_kirakira_bmp( &p->kirakira_bmp_2, sx    , sy    , n_bmp_white_invisible, n_bmp_white );
@@ -194,7 +194,7 @@ n_object_kirakira_animation( n_nn2 *p )
 void
 n_object_kirakira_draw( n_nn2 *p )
 {
-//NSLog( @"n_object_kirakira_draw()" );
+//n_nn2_log( "n_object_kirakira_draw()" );
 
 	// [!] : don't call already-threaded module like n_chara_bmp_copy() here
 

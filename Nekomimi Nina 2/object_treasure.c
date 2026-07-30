@@ -138,7 +138,7 @@ n_object_treasure_heart_detect( n_nn2 *p, n_type_gfx tx, n_type_gfx ty )
 
 	if ( n_object_treasure_heart_collision( p, tx, ty ) )
 	{
-//NSLog( @"!" );
+
 		ret = TRUE;
 
 
@@ -285,7 +285,7 @@ n_object_treasure_draw_heart( n_nn2 *p )
 
 		n_type_gfx x = p->stage->treasure_x;
 		n_type_gfx y = p->stage->treasure_y;
-//NSLog( @"%d %d", x, y );
+//n_nn2_log( "%d %d", x, y );
 
 		n_chip_draw_dokan_single( p, &p->treasure_heart[ i ], x, y );
 	}
@@ -341,7 +341,7 @@ n_object_treasure_draw( n_nn2 *p )
 
 	n_type_gfx x = p->stage->treasure_x;
 	n_type_gfx y = p->stage->treasure_y;
-//NSLog( @"%d %d", x, y );
+//n_nn2_log( "%d %d", x, y );
 
 	n_chip_draw_dokan_single( p, &p->treasure_bmp[ p->stage->treasure_state ], x, y );
 
@@ -355,7 +355,7 @@ n_object_treasure_draw( n_nn2 *p )
 void
 n_object_treasure_init( n_nn2 *p )
 {
-//NSLog( @"n_object_treasure_init()" );
+//n_nn2_log( "n_object_treasure_init()" );
 
 #ifndef N_NN2_TREASURE_ONOFF
 	return;
@@ -363,10 +363,10 @@ n_object_treasure_init( n_nn2 *p )
 
 	n_nn2_treasure_maker( p );
 
-	n_nn2_rc_load( @"rc/object/treasure/heart", &p->treasure_heart[ 0 ], p->scaler );
-	n_nn2_rc_load( @"rc/object/treasure/heart", &p->treasure_heart[ 1 ], p->scaler );
-	n_nn2_rc_load( @"rc/object/treasure/heart", &p->treasure_heart[ 2 ], p->scaler );
-	n_nn2_rc_load( @"rc/object/treasure/heart", &p->treasure_heart[ 3 ], p->scaler );
+	n_nn2_rc_load( "rc/object/treasure/heart", &p->treasure_heart[ 0 ], p->scaler );
+	n_nn2_rc_load( "rc/object/treasure/heart", &p->treasure_heart[ 1 ], p->scaler );
+	n_nn2_rc_load( "rc/object/treasure/heart", &p->treasure_heart[ 2 ], p->scaler );
+	n_nn2_rc_load( "rc/object/treasure/heart", &p->treasure_heart[ 3 ], p->scaler );
 
 	n_bmp_resampler( &p->treasure_heart[ 1 ], 1.05, 1.05 );
 	n_bmp_resampler( &p->treasure_heart[ 2 ], 1.10, 1.10 );
@@ -379,7 +379,7 @@ n_object_treasure_init( n_nn2 *p )
 	n_bmp_resizer( &p->treasure_heart[ 2 ], sx, sy, 0, N_BMP_RESIZER_CENTER );
 	n_bmp_resizer( &p->treasure_heart[ 3 ], sx, sy, 0, N_BMP_RESIZER_CENTER );
 
-	n_nn2_rc_load( @"rc/object/treasure/key", &p->treasure_key, p->scaler );
+	n_nn2_rc_load( "rc/object/treasure/key", &p->treasure_key, p->scaler );
 
 //n_nn2_debug_bmp_save( p, &p->treasure_bmp[ 0 ] );
 //n_nn2_debug_bmp_save( p, &p->treasure_key );
@@ -401,7 +401,7 @@ n_object_treasure_is_running( n_nn2 *p )
 void
 n_object_treasure_loop( n_nn2 *p )
 {
-//NSLog( @"n_object_treasure_loop()" );
+//n_nn2_log( "n_object_treasure_loop()" );
 
 #ifndef N_NN2_TREASURE_ONOFF
 	return;

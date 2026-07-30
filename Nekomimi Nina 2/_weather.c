@@ -16,7 +16,7 @@ n_nn2_weather_init( n_nn2 *p, int hour )
 
 	p->weather_hour = hour % 24;
 
-//NSLog( @"%d", hour );
+//n_nn2_log( "%d", hour );
 //hour = 0;
 //hour = 4;
 //hour = 8;
@@ -29,7 +29,7 @@ n_nn2_weather_init( n_nn2 *p, int hour )
 	u32 color_3 = n_bmp_rgb_mac( 0,200,255 );
 
 	n_type_real v = (n_type_real) hour / 24;
-//NSLog( @"%f", coeff );
+//n_nn2_log( "%f", coeff );
 
 	if ( v < 0.25 )
 	{
@@ -98,7 +98,7 @@ n_nn2_weather_change( n_nn2 *p, n_nn2_stage *s, int hour )
 	n_nn2_stage_earth_maker( p, s, darkmode_onoff );
 
 
-	extern void n_nn2_stage_brick_maker( n_nn2 *p, n_nn2_stage *s, n_bmp *bmp, CGFloat blend, int dark );
+	extern void n_nn2_stage_brick_maker( n_nn2 *p, n_nn2_stage *s, n_bmp *bmp, n_type_real blend, int dark );
 
 	n_nn2_stage_brick_maker( p, s, &s->chip_brick_1, 0.55, darkmode_onoff );
 	n_nn2_stage_brick_maker( p, s, &s->chip_brick_2, 0.77, darkmode_onoff );

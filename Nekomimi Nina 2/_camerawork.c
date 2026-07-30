@@ -71,7 +71,7 @@ n_camerawork_autofocus_normal( n_nn2 *p )
 {
 //return;
 
-//NSLog( @"%d %d", p->nina_y, p->map_max_sy );
+//n_nn2_log( "%d %d", p->nina_y, p->map_max_sy );
 
 	if ( p->stage->camera_phase == N_NN2_CAMERA_PHASE_NONE )
 	{
@@ -132,7 +132,7 @@ n_camerawork_autofocus_normal( n_nn2 *p )
 		p->stage->camera_y = cy;
 	}
 
-//NSLog( @"%d", p->camera_phase );
+//n_nn2_log( "%d", p->camera_phase );
 
 
 	return;

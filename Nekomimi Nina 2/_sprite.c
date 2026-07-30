@@ -69,9 +69,9 @@ typedef struct n_sprite_struct {
 	BOOL            is_landed;
 
 	int             jump_state;
-	CGFloat         jump_max;
-	CGFloat         jump_float;
-	CGFloat         jump_pos_prv;
+	n_type_real     jump_max;
+	n_type_real     jump_float;
+	n_type_real     jump_pos_prv;
 
 	n_type_gfx      move_step;
 	n_type_gfx      fall_step;
@@ -122,19 +122,19 @@ void
 n_sprite_debug( n_sprite *r )
 {
 
-NSLog( @"option %d", r->option );
-NSLog( @"pos %d %d %d %d", r->x, r->y, r->sx, r->sy );
-NSLog( @"override %d %d", r->override_x, r->override_y );
-NSLog( @"direction %d", r->direction );
-NSLog( @"margin %d %d", r->margin_sx, r->margin_sy );
-NSLog( @"landed %d", r->is_landed );
-NSLog( @"pos %d %f %f %f", r->jump_state, r->jump_max, r->jump_float, r->jump_pos_prv );
-NSLog( @"step %d %d", r->move_step, r->fall_step );
-NSLog( @"is_caught %d", r->is_caught );
-NSLog( @"collision %d %d %d", r->collision_ud_detail, r->collision_lr_detail, r->collision_lift_onoff );
-NSLog( @"throw_onoff %d", r->throw_onoff );
-NSLog( @"invisible %d", r->invisible );
-NSLog( @"stage_number %d", r->stage_number );
+n_nn2_log( "option %d", r->option );
+n_nn2_log( "pos %d %d %d %d", r->x, r->y, r->sx, r->sy );
+n_nn2_log( "override %d %d", r->override_x, r->override_y );
+n_nn2_log( "direction %d", r->direction );
+n_nn2_log( "margin %d %d", r->margin_sx, r->margin_sy );
+n_nn2_log( "landed %d", r->is_landed );
+n_nn2_log( "pos %d %f %f %f", r->jump_state, r->jump_max, r->jump_float, r->jump_pos_prv );
+n_nn2_log( "step %d %d", r->move_step, r->fall_step );
+n_nn2_log( "is_caught %d", r->is_caught );
+n_nn2_log( "collision %d %d %d", r->collision_ud_detail, r->collision_lr_detail, r->collision_lift_onoff );
+n_nn2_log( "throw_onoff %d", r->throw_onoff );
+n_nn2_log( "invisible %d", r->invisible );
+n_nn2_log( "stage_number %d", r->stage_number );
 
 
 	return;

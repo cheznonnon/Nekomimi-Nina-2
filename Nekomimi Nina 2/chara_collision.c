@@ -72,7 +72,7 @@ n_chara_collision_hole( n_nn2 *p )
 		u32 data = 0; n_bmp_ptr_get( &p->stage->map_dokan, x, y, &data );
 
 		int stage_number = n_nn2_map_dokan_data_kind( data );
-//NSLog( @"Warp to %d", stage_number );
+//n_nn2_log( "Warp to %d", stage_number );
 
 		extern void n_nn2_stage_transition_go( n_nn2 *p, int stage_number );
 		n_nn2_stage_transition_go( p, stage_number );
@@ -131,7 +131,7 @@ n_chara_margin_detect( n_nn2 *p, n_bmp *bmp, int udlr )
 			u32 color; n_bmp_ptr_get( bmp, x,y, &color );
 			if ( 255 == n_bmp_a( color ) )
 			{
-//NSLog( @"found %d %d", N_BMP_SY( bmp ), N_BMP_SY( bmp ) - y );
+//n_nn2_log( "found %d %d", N_BMP_SY( bmp ), N_BMP_SY( bmp ) - y );
 				return N_BMP_SY( bmp ) - y;
 			}
 
@@ -218,7 +218,7 @@ n_chara_margin_head( n_nn2 *p )
 void
 n_chara_collision_jam_resolver( n_nn2 *p, int direction )
 {
-//NSLog( @"n_chara_collision_jam_resolver()" );
+//n_nn2_log( "n_chara_collision_jam_resolver()" );
 //return;
 
 
@@ -246,7 +246,7 @@ n_chara_collision_jam_resolver( n_nn2 *p, int direction )
 
 	if ( direction == N_NN2_DIRECTION_LEFT )
 	{
-//NSLog( @"Left" );
+//n_nn2_log( "Left" );
 
 		if ( p->jump_state == 0 )
 		{
@@ -262,7 +262,7 @@ n_chara_collision_jam_resolver( n_nn2 *p, int direction )
 			{
 				if ( n_chip_detect( p, tx / p->mapchip_unit, ty / p->mapchip_unit ) )
 				{
-//NSLog( @"Right : Hit" );
+//n_nn2_log( "Right : Hit" );
 					stop = tx;
 					break;
 				}
@@ -293,7 +293,7 @@ n_chara_collision_jam_resolver( n_nn2 *p, int direction )
 		{
 			if ( n_chip_detect( p, tx / p->mapchip_unit, ty / p->mapchip_unit ) )
 			{
-//NSLog( @"Left : Hit" );
+//n_nn2_log( "Left : Hit" );
 				stop = tx;
 				break;
 			}
@@ -313,7 +313,7 @@ n_chara_collision_jam_resolver( n_nn2 *p, int direction )
 	} else
 	if ( direction == N_NN2_DIRECTION_RIGHT )
 	{
-//NSLog( @"Right" );
+//n_nn2_log( "Right" );
 
 		if ( p->jump_state == 0 )
 		{
@@ -329,7 +329,7 @@ n_chara_collision_jam_resolver( n_nn2 *p, int direction )
 			{
 				if ( n_chip_detect( p, tx / p->mapchip_unit, ty / p->mapchip_unit ) )
 				{
-//NSLog( @"Left : Hit" );
+//n_nn2_log( "Left : Hit" );
 					stop = tx;
 					break;
 				}
@@ -362,7 +362,7 @@ n_chara_collision_jam_resolver( n_nn2 *p, int direction )
 		{
 			if ( n_chip_detect( p, tx / p->mapchip_unit, ty / p->mapchip_unit ) )
 			{
-//NSLog( @"Right : Hit" );
+//n_nn2_log( "Right : Hit" );
 				stop = tx;
 				break;
 			}
@@ -484,38 +484,38 @@ n_chara_collision_wall_lr_loop( n_nn2 *p )
 
 	if ( n_chip_detect( p, tx_l, ty_u ) )
 	{
-//NSLog( @"L : N_CHARA_COLLISION_LR_HEAD" );
+//n_nn2_log( "L : N_CHARA_COLLISION_LR_HEAD" );
 		ret |= N_CHARA_COLLISION_LR_HEAD;
 	}
 
 	if ( n_chip_detect_slip( p, tx_l, ty_m ) )
 	{
-//NSLog( @"L : N_CHARA_COLLISION_LR_SLIP" );
+//n_nn2_log( "L : N_CHARA_COLLISION_LR_SLIP" );
 		ret |= N_CHARA_COLLISION_LR_SLIP;
 	}
 
 	if ( n_chip_detect( p, tx_l, ty_d ) )
 	{
-//NSLog( @"L : N_CHARA_COLLISION_LR_FOOT" );
+//n_nn2_log( "L : N_CHARA_COLLISION_LR_FOOT" );
 		ret |= N_CHARA_COLLISION_LR_FOOT;
 	}
 
 
 	if ( n_chip_detect( p, tx_r, ty_u ) )
 	{
-//NSLog( @"R : N_CHARA_COLLISION_LR_HEAD" );
+//n_nn2_log( "R : N_CHARA_COLLISION_LR_HEAD" );
 		ret |= N_CHARA_COLLISION_LR_HEAD;
 	}
 
 	if ( n_chip_detect_slip( p, tx_r, ty_m ) )
 	{
-//NSLog( @"R : N_CHARA_COLLISION_LR_SLIP" );
+//n_nn2_log( "R : N_CHARA_COLLISION_LR_SLIP" );
 		ret |= N_CHARA_COLLISION_LR_SLIP;
 	}
 
 	if ( n_chip_detect( p, tx_r, ty_d ) )
 	{
-//NSLog( @"R : N_CHARA_COLLISION_LR_FOOT" );
+//n_nn2_log( "R : N_CHARA_COLLISION_LR_FOOT" );
 		ret |= N_CHARA_COLLISION_LR_FOOT;
 	}
 
@@ -563,7 +563,7 @@ n_chara_collision_lr( n_nn2 *p, int direction )
 {
 //return;
 
-	if ( N_NN2_DEBUG_LOOP ) { n_nn2_debug_hangup_detector( @"n_chara_collision_lr()" ); }
+	if ( N_NN2_DEBUG_LOOP ) { n_nn2_debug_hangup_detector( "n_chara_collision_lr()" ); }
 
 
 	if ( p->dokan_onoff ) { return; }
@@ -619,13 +619,13 @@ n_chara_collision_swim( n_nn2 *p, n_type_gfx my )
 
 	if ( p->wave_onoff == FALSE ) { return; }
 
-//NSLog( @"%d", my );
+//n_nn2_log( "%d", my );
 
 	if ( my < 10 )
 	{
 		if ( p->swim_onoff )
 		{
-//NSLog( @"1" );
+//n_nn2_log( "1" );
 			n_nn2_sound_effect_play( N_NN2_SOUND_WATER );
 
 			p->swim_onoff = FALSE;
@@ -639,7 +639,7 @@ n_chara_collision_swim( n_nn2 *p, n_type_gfx my )
 	{
 		if ( p->swim_onoff == FALSE )
 		{
-//NSLog( @"2" );
+//n_nn2_log( "2" );
 			n_nn2_sound_effect_play( N_NN2_SOUND_WATER );
 
 			p->swim_onoff = TRUE;
@@ -698,13 +698,13 @@ n_chara_collision_dokan( n_nn2 *p, n_type_gfx tx, n_type_gfx ty, u32 data )
 {
 	if ( n_object_bell_condition_detect( p, tx, ty ) )
 	{
-//NSLog( @"enter" );
+//n_nn2_log( "enter" );
 
 		p->dokan_ready = TRUE;
 
 		if ( ( p->input & N_NN2_INPUT_D )&&( p->dokan_onoff == FALSE ) )
 		{
-//NSLog( @"N_CHIP_DOKAN_Q : ON" );
+//n_nn2_log( "N_CHIP_DOKAN_Q : ON" );
 //p->debug_pause = TRUE;
 
 			p->dokan_onoff = TRUE;
@@ -764,7 +764,7 @@ n_chara_collision_gravity_loop( n_nn2 *p, BOOL is_inner )
 
 		if ( p->hipdrop_state == 1 )
 		{
-//static int i = 0; NSLog( @"%d", i ); i++;
+//static int i = 0; n_nn2_log( "%d", i ); i++;
 
 			n_splash_init( p, &p->splash_cloud, p->stage->nina_x, spr->y, 333 );
 
@@ -780,7 +780,7 @@ n_chara_collision_gravity_loop( n_nn2 *p, BOOL is_inner )
 
 	n_type_gfx tx = p->stage->nina_x + ( p->nina_sx / 2 );
 	n_type_gfx ty = p->stage->nina_y + p->nina_sy - p->nina_margin_foot; if ( is_inner ) { ty--; }
-//NSLog( @"%d %d", tx, ty );
+//n_nn2_log( "%d %d", tx, ty );
 
 	if ( p->dokan_onoff ) { ty -= p->dokan_disappear_offset; }
 
@@ -821,7 +821,7 @@ n_chara_collision_gravity_loop( n_nn2 *p, BOOL is_inner )
 	if ( tx_rear >= N_BMP_SX( &p->stage->map ) ) { n_bmp_ptr_get( &p->stage->map, N_BMP_SX( &p->stage->map ) - 1, ty, &data_rear ); }
 	if ( tx      >= N_BMP_SX( &p->stage->map ) ) { n_bmp_ptr_get( &p->stage->map, N_BMP_SX( &p->stage->map ) - 1, ty, &data_midl ); }
 
-//NSLog( @"%d %d", n_chip_data_kind( data_fwrd ), n_chip_data_kind( data_rear ) );
+//n_nn2_log( "%d %d", n_chip_data_kind( data_fwrd ), n_chip_data_kind( data_rear ) );
 
 
 	p->alignment_adjuster = 0;
@@ -839,7 +839,7 @@ n_chara_collision_gravity_loop( n_nn2 *p, BOOL is_inner )
 		( N_CHIP_DOKAN_Q_R == n_chip_data_kind( data_midl ) )
 	)
 	{
-//NSLog( @"N_CHIP_DOKAN_Q : %d", p->input );
+//n_nn2_log( "N_CHIP_DOKAN_Q : %d", p->input );
 
 		// [!] : usability : before n_chip_detect_block()
 
@@ -856,7 +856,7 @@ n_chara_collision_gravity_loop( n_nn2 *p, BOOL is_inner )
 		( n_chip_detect_block( p, data_midl ) )
 	)
 	{
-//NSLog( @"landing" );
+//n_nn2_log( "landing" );
 
 		ret = TRUE;
 
@@ -881,8 +881,8 @@ n_chara_collision_gravity_loop( n_nn2 *p, BOOL is_inner )
 	} else
 	if ( n_chip_detect_pass_thru( p, data_midl ) )
 	{
-//NSLog( @"pass thru : %d %d", n_chip_detect_pass_thru( p, data_fwrd ), n_chip_detect_pass_thru( p, data_rear ) );
-//NSLog( @"pass thru : %d %d %d",  tx_fwrd, tx_rear, ty );
+//n_nn2_log( "pass thru : %d %d", n_chip_detect_pass_thru( p, data_fwrd ), n_chip_detect_pass_thru( p, data_rear ) );
+//n_nn2_log( "pass thru : %d %d %d",  tx_fwrd, tx_rear, ty );
 
 		ret = TRUE;
 
@@ -951,7 +951,7 @@ n_chara_collision_gravity_loop( n_nn2 *p, BOOL is_inner )
 		} else
 		if ( p->jump_state != N_NN2_JUMP_STATE_RISE )
 		{
-//NSLog( @"free fall : %d", p->jump_state );
+//n_nn2_log( "free fall : %d", p->jump_state );
 
 			p->jump_state = N_NN2_JUMP_STATE_FALL;
 			p->sprite_cur = &n_chara_sprite_jump;
@@ -969,7 +969,7 @@ BOOL
 n_chara_collision_gravity( n_nn2 *p )
 {
 
-	if ( N_NN2_DEBUG_LOOP ) { n_nn2_debug_hangup_detector( @"n_chara_collision_gravity()" ); }
+	if ( N_NN2_DEBUG_LOOP ) { n_nn2_debug_hangup_detector( "n_chara_collision_gravity()" ); }
 
 
 	BOOL ret = FALSE;
@@ -1064,7 +1064,7 @@ n_chara_collision_force_landing( n_nn2 *p )
 
 
 
-//static BOOL n_chara_collision_fall_condition_NSLog = FALSE;
+//static BOOL n_chara_collision_fall_condition_log = FALSE;
 
 // internal
 n_type_gfx
@@ -1087,7 +1087,7 @@ n_chara_collision_fall_condition( n_nn2 *p, n_type_gfx tx, n_type_gfx ty, n_type
 		if ( i >= maxim ) { break; }
 	}
 
-//if ( n_chara_collision_fall_condition_NSLog ) { NSLog( @"%d", count ); }
+//if ( n_chara_collision_fall_condition_log ) { n_nn2_log( "%d", count ); }
 	return count;
 }
 
@@ -1160,7 +1160,7 @@ n_chara_collision_cliff_loop( n_nn2 *p )
 	BOOL fwrd = n_chara_collision_cliff_detect( p, data_fwrd );
 	BOOL midl = n_chara_collision_cliff_detect( p, data_midl );
 	BOOL rear = n_chara_collision_cliff_detect( p, data_rear );
-//NSLog( @"%d %d %d", fwrd, midl, rear );
+//n_nn2_log( "%d %d %d", fwrd, midl, rear );
 
 	if ( rear )
 	{
@@ -1173,7 +1173,7 @@ n_chara_collision_cliff_loop( n_nn2 *p )
 		)
 		{
 			n_type_gfx threshold = tx_rear % p->mapchip_unit;
-//NSLog( @"%d / %d", threshold, p->mapchip_unit );
+//n_nn2_log( "%d / %d", threshold, p->mapchip_unit );
 
 			if ( p->direction == N_NN2_DIRECTION_LEFT )
 			{
@@ -1198,7 +1198,7 @@ n_chara_collision_cliff_loop( n_nn2 *p )
 		BOOL f = n_chip_detect_special( p, data_fwrd );
 		BOOL m = n_chip_detect_special( p, data_midl );
 		BOOL r = n_chip_detect_special( p, data_rear );
-//NSLog( @"%d %d %d", f, m, r );
+//n_nn2_log( "%d %d %d", f, m, r );
 
 		if ( ( f )&&( m )&&( r == FALSE ) )
 		{
@@ -1302,12 +1302,12 @@ n_chara_collision_heading( n_nn2 *p )
 {
 //return FALSE;
 
-	if ( N_NN2_DEBUG_LOOP ) { n_nn2_debug_hangup_detector( @"n_chara_collision_heading()" ); }
+	if ( N_NN2_DEBUG_LOOP ) { n_nn2_debug_hangup_detector( "n_chara_collision_heading()" ); }
 
 
-	static CGFloat p_pos = -1;
+	static n_type_real p_pos = -1;
 
-	CGFloat value;
+	n_type_real value;
 	if ( p->swim_onoff )
 	{
 		value = p->powerup->swim_up;
@@ -1315,11 +1315,11 @@ n_chara_collision_heading( n_nn2 *p )
 		value = p->powerup->jump_up;
 	}
 
-	CGFloat pos = n_nn2_flowy_effect( value, p->jump_float );
+	n_type_real pos = n_nn2_flowy_effect( value, p->jump_float );
 	if ( p_pos == -1 ) { p_pos = pos; }
 
 	n_type_gfx step = pos - p_pos;
-//NSLog( @"%d", step );
+//n_nn2_log( "%d", step );
 
 	p_pos = pos;
 
